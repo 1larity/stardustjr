@@ -1,0 +1,20 @@
+function discoverNumber(position as Vector2D)
+		//play sucessful scan sound
+		PlaySound ( scan_success )
+		 // set up particles
+        SetParticlesPosition ( discoveryParticles, position.x+50, position.y+50 )
+        ResetParticleCount ( discoveryParticles )
+        SetParticlesFrequency ( discoveryParticles, 250 )
+        SetParticlesLife ( discoveryParticles, 2.5 )
+        SetParticlesSize ( discoveryParticles, Random(10,15) )
+        SetParticlesStartZone ( discoveryParticles, -10, 0, 10, 0 )
+        SetParticlesImage ( discoveryParticles, discoveryParticles )
+        SetParticlesDirection ( discoveryParticles, 10, 10 )
+        SetParticlesAngle ( discoveryParticles, 360 )
+        SetParticlesVelocityRange ( discoveryParticles, 2.0, 3.5 )
+        SetParticlesMax ( discoveryParticles, 50 )
+		SetParticlesRotationRange( discoveryParticles, -100, 100 ) 
+        AddParticlesColorKeyFrame ( discoveryParticles, 0.0, 0, 0, 0, 0 )
+        AddParticlesColorKeyFrame ( discoveryParticles, 0.5, 255, 255, 0, 255 )
+        AddParticlesColorKeyFrame ( discoveryParticles, 2.8, 255, 0, 0, 0 )
+endfunction
