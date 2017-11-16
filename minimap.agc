@@ -17,7 +17,7 @@ mapSize# = 100// devMin# / 20.0
 	setViewZoom( thisZoom# )
 	SetDisplayAspect(-1.0)
 	//create working image
-	CreateRenderImage( minimap, 1000, 1000, 0, 0 )
+	CreateRenderImage( minimap, 512, 512, 0, 0 )
 	//render to the working image, not screen
 	 SetRenderToImage( minimap, -1 ) // -1 for depth to use an internal buffer, we could set an image if we wanted (not supported on all devices)
     ClearScreen() // clear the image before drawing to it
@@ -48,11 +48,13 @@ SetDisplayAspect(1.0)
 	//reset rendering to main screen
 
 	SetRenderToScreen()
-	SetSpriteScale(minimap,0.05,0.05)
+	SetSpriteScale(minimap,0.04,0.04)
 	SetSpritePosition  ( minimap,100 - GetSpriteWidth( minimap ) , 0 )
 	FixSpriteToScreen(minimap,1)
 endfunction
 
 function positionMiniMap()
 	SetSpritePosition  ( minimap,GetScreenBoundsRight() - GetSpriteWidth( minimap ) , GetScreenBoundsTop())
+	//fix joystick to lower right screen
+	SetVirtualJoystickPosition(1,GetScreenBoundsRight() -20,GetScreenBoundsBottom()-20)
 endfunction

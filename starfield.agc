@@ -1,6 +1,5 @@
 // functions for supporting starfield stuff
-#include "vector.agc"
-#include "ship.agc"
+
 type starfield
     position as Vector2D
 	size# as float

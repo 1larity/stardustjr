@@ -1,10 +1,12 @@
 
-// Project: Starfield 
+// Project: Stardust space game 
 // Created: 2017-10-11
 // Copyright Richard Beech 2000-2020
-// show all errors
+// show all errors and stop (1=continue,0=ignore)
 SetErrorMode(2)
+//Require declaration of vars
 #option_explicit
+//
 #include "mediaconstant.agc"
 #include "starfield.agc"
 #include "medialoader.agc"
@@ -14,6 +16,11 @@ SetErrorMode(2)
 #include "interface.agc"
 #include "fileops.agc"
 #include "minimap.agc"
+#include "vector.agc"
+#include "ship.agc"
+#include "NetGamePlugin.agc"
+#include "netcode.agc"
+#include "chat.agc"
 #constant debug =0
 
 // set window properties
@@ -29,13 +36,14 @@ SetScissor( 0,0,0,0 ) // use the maximum available screen space, no black border
 UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
 SetDisplayAspect(1.0)
 gamestate as gamestate
-
+global nickname$ as string= "rich2"
+global ChatEditFocus
+networkId = NGP_JoinNetwork(ServerHost$,ServerPort, nickname$ , NetworkLatency)
 //setup planets
 populate_planets(gamestate.planets)
 load_assets(gamestate)
 
-//add the joysticks to the screen
-AddVirtualJoystick(1,80,80,20)
+
 
 setup_interface()
 
@@ -54,10 +62,10 @@ do
 	// do player inputs
 	//if GetKeyboardExists()=1 
 		//if platform is PC, check PC controls
-		doSimPC(gamestate)
+		//doSimPC(gamestate)
 	//else	
 		//if platform is mobile, check mobile controls
-		doSimMobile(gamestate)
+		//doSimMobile(gamestate)
 	//endif	
 	//simulate game
 	doSim(gamestate)
@@ -72,6 +80,6 @@ do
 	print("ship pos " + str(gamestate.ship.position.x)+" "+str(gamestate.ship.position.y))
 	print(GetWritePath())
 	print (GetScreenBoundsTop()) 
-	SetClearColor(7,15,51)
+	//SetClearColor(7,15,51)
     Sync()
 loop

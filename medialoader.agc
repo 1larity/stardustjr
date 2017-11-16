@@ -1,15 +1,15 @@
 //stuff for loading assets
 
-
+//main asset load loop
 function load_assets (gamestate REF as gamestate)
 	// generate mipmaps for loaded images
 	SetGenerateMipmaps(1)
+	load_font()
 	
 	load_stars(gamestate)
 	load_sun(gamestate)
+	//create minimap, all screen elements rendered prior are displayed
 	create_minimap(gamestate)
-	
-	load_font()
 	load_music()
 	load_ship()
 	load_scan()
@@ -22,36 +22,68 @@ function load_particles()
 	CreateParticles ( discoveryParticles, -1000, -1000 )
 endfunction
 
+function load_station(gamestate REF as gamestate)
+
+	LoadImage (stationPart01, "stationPart01.png")
+	LoadImage (stationPart02, "stationPart02.png")
+	
+	CreateSprite (stationPart02,stationPart02)
+	index as integer
+	for index=0 to 3
+		CreateSprite (stationPart01+index,stationPart01)
+		SetSpriteAngle(stationPart01+index,index*90)
+	next index
+endfunction
+
 function load_ship()
-	LoadImage ( player_ship, "ship01.png" )
+	
 	LoadImage (minimap_player_ship, "minimap_ship.png")
-	CreateSprite (player_ship,player_ship)
 	
 	//minimap sprite
 	CreateSprite (minimap_player_ship,minimap_player_ship)
-	SetSpriteOffset( player_ship, GetSpriteWidth(minimap_player_ship)/2, GetSpriteHeight(minimap_player_ship)/2 ) 
+
 	SetSpriteScale(minimap_player_ship,0.04,0.04) 
 	FixSpriteToScreen(minimap_player_ship,1)
+
+
+
+endfunction
+
+function CreateLocalShipSprite()
+	// Local Player Sprite
+	LoadImage ( player_ship, "ship01.png" )
+	CreateSprite(player_ship,player_ship)
 	SetSpriteAnimation(player_ship,500,300,5)
 	SetSpriteDepth(player_ship,1)
 		
 	//set up player ship centre and scale
 	SetSpriteOffset( player_ship, GetSpriteWidth(player_ship)/2, GetSpriteHeight(player_ship)/2 ) 
 	SetSpriteScale(player_ship,0.04,0.04) 
-	
+
 	//position ship at the screen centre
 	SetSpritePositionByOffset  ( player_ship, 50, 50 )
-	//pin the ship to the screen centre
-
+	
+	
+	// Local Text Label for Player's sprite
+	localNickLabel = CreateText("Local")
+	SetTextAlignment( localNickLabel, 1 )
+	SetTextSize(localNickLabel,5)
+	SetTextFont(localNickLabel,main_font)
+	shipAngle# = 0
+	shipSpeed#= 0
+	shipAngleFactor# = 0
 	//set collision on ship to fit sprite image
 	SetSpriteShape(player_ship, 3)
-
 endfunction
-
 function load_stars(gamestate REF as gamestate)
 	LoadImage ( 50, "star.png" )
-	//randomStars()
-	starGrid()
+	//if normal mode genrate starfield
+	if debug=0
+		randomStars()
+	else
+		//generate debug starfield
+		starGrid()
+	endif
 endfunction
 
 function load_sun(gamestate REF as gamestate)

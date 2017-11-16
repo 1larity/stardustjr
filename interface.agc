@@ -1,10 +1,23 @@
 //setup scan button 
 
 function setup_interface()
+	createChatBox()
+	//add the joysticks to the screen
+set_virtual_joystick() 
 set_scan_button()
 set_save_button()
 set_load_button()	
 set_mine_button()	
+
+endfunction
+//setup virtual joystick
+function set_virtual_joystick()
+	joyStickRadius as integer=40
+	AddVirtualJoystick(1,GetScreenBoundsRight() -85,GetScreenBoundsBottom() -40,joyStickRadius)
+	
+	LoadImage(joystickImage,"joystickthumbpad.png")
+	SetVirtualJoystickImageInner( 1, joystickImage ) 
+	
 endfunction
 // set up scan button
 function set_scan_button()
@@ -81,4 +94,56 @@ function set_mine_button()
 	SetTextFont(mine_button_text,main_font)
 	FixTextToScreen(mine_button_text,1)
 	SetTextPosition(mine_button_text,button_x,button_y-(buttonSizeX/2)+((text_size/2)))
+endfunction
+// setup chatbox for the first time
+function createChatBox()
+// Display the ChatBox with incoming messages
+ CreateText(incoming_chat_text,"Welcome to the Chat !")
+SetTextMaxWidth( incoming_chat_text, 50.0 )
+//SetTextScissor
+FixTextToScreen(incoming_chat_text,1)
+SetTextPosition(incoming_chat_text,30,70)
+SetTextSize(incoming_chat_text,5)
+//SetTextColor(ChatBoxMessage,0,0,0,255)
+
+// Display the Header Chat Input textbox
+CreateText(chat_header_text,"Chat : ")
+FixTextToScreen(chat_header_text,1)
+SetTextPosition(chat_header_text,30,65)
+SetTextSize(chat_header_text,5)
+//SetTextColor(LabelMessage,255,255,255,255)
+SetTextVisible(chat_header_text,1)
+
+CreateEditBox(chat_edit_text)
+SetEditBoxSize(chat_edit_text,50,5)
+SetEditBoxTextSize( chat_edit_text, 5 )
+FixEditBoxToScreen(chat_edit_text,1)
+SetEditBoxPosition(chat_edit_text,30,95.0)
+SetEditBoxFocus(chat_edit_text,0)
+SetEditBoxVisible(chat_edit_text,1)
+ChatEditFocus = 0
+endfunction
+
+//reposition buttons to lower left of screen
+function positionButtons()
+	SetVirtualButtonPosition(1,GetScreenBoundsLeft()+10,80)
+	SetTextPosition(scan_button_text,GetScreenBoundsLeft()+10,75)
+	SetVirtualButtonPosition(2,GetScreenBoundsLeft()+10,87)
+	SetTextPosition(save_button_text,GetScreenBoundsLeft()+10,82)
+	SetVirtualButtonPosition(3,GetScreenBoundsLeft()+10,94)
+	SetTextPosition(load_button_text,GetScreenBoundsLeft()+10,89)
+	SetVirtualButtonPosition(4,GetScreenBoundsLeft()+10,73)
+	SetTextPosition(mine_button_text,GetScreenBoundsLeft()+10,68)
+endfunction
+//reposition chat on resize
+function positionChat()
+	SetTextPosition(incoming_chat_text,GetScreenBoundsLeft()+25,70)
+	SetTextPosition(chat_header_text,GetScreenBoundsLeft()+25,65)
+	SetEditBoxPosition(chat_edit_text,GetScreenBoundsLeft()+25,95.0)
+	SetEditBoxSize(chat_edit_text,GetScreenBoundsRight()-30,5)
+	SetTextMaxWidth( incoming_chat_text, GetScreenBoundsRight()-30 )
+	SetVirtualButtonPosition(1,GetScreenBoundsLeft()+10,80)
+	SetVirtualButtonPosition(2,GetScreenBoundsLeft()+10,87)
+	SetVirtualButtonPosition(3,GetScreenBoundsLeft()+10,94)
+	SetVirtualButtonPosition(4,GetScreenBoundsLeft()+10,73)
 endfunction

@@ -13,8 +13,7 @@ function saveMap( filename$, gamestate as gamestate)
 	gameStateFile as integer
 	gameStateFile = OpenToWrite( filename$ )
 	JSON$ as string = ""
-	 JSON$=gamestate.toJSON()
-	  writeString(gameStateFile, JSON$)
-	 CloseFile (gameStateFile) 
-
+	JSON$=gamestate.toJSON()
+	writeString(gameStateFile, JSON$)
+	CloseFile (gameStateFile) 
 endfunction

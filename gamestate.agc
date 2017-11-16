@@ -1,10 +1,12 @@
 type gamestate
     ship as ship
 	planets as planet[20]
+	stations as station[10]
 	settings as settings
 endtype
 
 type planet
+	planetID as integer
 	name as string
 	position as Vector2D
 	resources as resource[5]
@@ -12,11 +14,23 @@ type planet
 	size# as float
 endtype
 
+type station
+	stationID as integer
+	name as String
+	position as Vector2D
+	facilities as facility[5]
+	stationType as integer
+endtype
+
 type asteroid
 	position as Vector2D
 	resources as resource[2]
 	drift as Vector2D
 	size as float
+endtype
+
+type facility 
+	facilityType as string
 endtype
 
 type resource
