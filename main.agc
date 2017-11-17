@@ -6,7 +6,8 @@
 SetErrorMode(2)
 //Require declaration of vars
 #option_explicit
-//
+//include code...
+#include "setup.agc"
 #include "mediaconstant.agc"
 #include "starfield.agc"
 #include "medialoader.agc"
@@ -22,40 +23,24 @@ SetErrorMode(2)
 #include "netcode.agc"
 #include "chat.agc"
 #constant debug =1
-
-// set window properties
-SetWindowTitle( "Starfield" )
-SetWindowSize( 1000, 1000, 0 )
-SetWindowAllowResize( 1 ) // allow the user to resize the window
-
-// set display properties
-//SetVirtualResolution( 1024, 768 ) // doesn't have to match the window
-SetOrientationAllowed( 1, 1, 1, 1 ) // allow both portrait and landscape on mobile devices
-SetSyncRate( 30, 0 ) // 30fps instead of 60 to save battery
-SetScissor( 0,0,0,0 ) // use the maximum available screen space, no black borders
-UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
-SetDisplayAspect(1.0)
-SetPrintSize( 2 ) 
 global gamestate as gamestate
 global ChatEditFocus
+//setup screen
+setupVideo()
+load_font()
+
+//open network
 setupNetSession()
 
 //setup planets
 populate_planets(gamestate.planets)
+//load and setup sound and graphics
 load_assets(gamestate)
-
-
-
+//drwa UI
 setup_interface()
 
-
-gamestate.ship.position.x=500.0
-gamestate.ship.position.y=500.0
-gamestate.ship.angle#=0
-gamestate.ship.turnspeed#=10
-gamestate.ship.velocity#=0
-gamestate.ship.acceleration#=.05
-gamestate.ship.max_velocity#=2.5
+gamestate.playerShip.acceleration#=.05
+gamestate.playerShip.max_velocity#=2.5
 
 distance_to_sun# as float
 do	
@@ -74,10 +59,10 @@ do
 
     Print( ScreenFPS() )
 
-	//print("ship heading " + str(gamestate.ship.heading.x) +"   "+ str(gamestate.ship.heading.x))
+	//print("ship heading " + str(gamestate.playerShip.heading.x) +"   "+ str(gamestate.playerShip.heading.x))
 	//Print debug
 	if debug=1
-		print("ship pos " + str(gamestate.ship.position.x)+" "+str(gamestate.ship.position.y))
+		print("ship pos " + str(gamestate.playerShip.position.x)+" "+str(gamestate.playerShip.position.y))
 		print(GetWritePath())
 		print (GetScreenBoundsTop()) 
 		endif

@@ -5,14 +5,16 @@ function TextInput(default$,X#,Y#)
 	tmpEditBox = CreateEditBox()
 	SetEditBoxPosition(tmpEditBox,X#,Y#)
 	SetEditBoxText(tmpEditBox,default$)
-	
-	SetEditBoxSize(tmpEditBox,350,50)
+	SetEditBoxTextColor( tmpEditBox,0, 0, 0 ) 
+	SetEditBoxBackgroundColor( tmpEditBox, 255, 255, 255, 255 ) 
+	SetEditBoxSize(tmpEditBox,(GetScreenBoundsRight()-20)/2,5)
 	SetEditBoxTextSize( tmpEditBox, 40 )
+	SetEditBoxFont( tmpEditBox, main_font)
 	//Enter 'quit' to End
 	SetEditBoxFocus(tmpEditBox,1)
 
 	Repeat
-	//	Sync()
+		Sync()
 	Until GetEditBoxHasFocus( tmpEditBox ) =0
 
 	ReturnValue$ = GetEditBoxText(tmpEditBox)

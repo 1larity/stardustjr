@@ -47,14 +47,16 @@ FILE_3=interface.agc;-1
 FILE_4=fileops.agc;-1
 FILE_5=netcode.agc;-1
 FILE_6=chat.agc;-1
+FILE_7=setup.agc;-1
 
 [files]
-FILE_NAME_0=0;main.agc;1175;0
-FILE_NAME_1=0;minimap.agc;1751;10
+FILE_NAME_0=0;main.agc;2102;0
+FILE_NAME_1=0;minimap.agc;1751;5
 FILE_NAME_2=0;interface.agc;52;1
 FILE_NAME_3=0;fileops.agc;253;2
-FILE_NAME_4=0;netcode.agc;520;8
-FILE_NAME_5=0;chat.agc;331;9
+FILE_NAME_4=0;netcode.agc;520;3
+FILE_NAME_5=0;chat.agc;331;4
+FILE_NAME_6=1;setup.agc;0;10
 
 [project]
 description=

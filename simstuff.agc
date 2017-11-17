@@ -1,8 +1,6 @@
 /****************************************************************/
 /*                  NETWORK SERVER PROPERTIES					*/
 /****************************************************************/
-
-
 global  gameStateFile 
 Global ChatMessages as string[]
 global localNickLabel as integer
@@ -10,148 +8,12 @@ global localSprite as integer
 global displayGhost as integer
 global Tween#
 global OwnSpriteColorChosen as integer
-
 global UseBoost as integer
-
 global ShipMaxSpeed# as float= 4.0
 global networkId
-
-
 global isScanning as integer=0
 global scanStart# as float =0
 
-//do player inputs for touch screen
-function doSimMobile(gamestate REF as gamestate)
-	controller_x# as float
-	controller_y# as float
-	controller_x# = GetVirtualJoystickX(1)
-	controller_y# = GetVirtualJoystickY(1)
-	Print ("JoyStick X: "+Str(GetVirtualJoystickX(1),2))
-	Print ("JoyStick Y: "+Str(GetVirtualJoystickY(1),2))
-	
-   //assume ship is not turning
-   gamestate.ship.current_turning=3
-   // set slow ship turn
-    
-    if controller_x#>0.25 and controller_x#<0.65
-		gamestate.ship.angle#=gamestate.ship.angle# + (gamestate.ship.turnspeed#/2)
-		gamestate.ship.current_turning=4
-	endif
-	if controller_x#<-0.25 and controller_x# > - 0.65
-		gamestate.ship.angle#=gamestate.ship.angle# - (gamestate.ship.turnspeed#/2)
-		gamestate.ship.current_turning=2
-	endif
-	//set ship fast turn
-	    if controller_x#>0.65
-		gamestate.ship.angle#=gamestate.ship.angle# + gamestate.ship.turnspeed#
-		gamestate.ship.current_turning=1
-	endif
-	if controller_x#<-0.65 
-		gamestate.ship.angle#=gamestate.ship.angle# - gamestate.ship.turnspeed#
-		gamestate.ship.current_turning=5
-	endif
-	
-	
-	gamestate.ship.angle#=Mod(gamestate.ship.angle#, 360)
-remstart	
-	if ship.angle# <= -0.1
-		ship.angle#=360
-	endif
-	if ship.angle#>=360.1
-		ship.angle# =0
-	endif
-remend		
-	if (controller_y#<0.25 and gamestate.ship.velocity# < gamestate.ship.max_velocity#) 
-		gamestate.ship.velocity#=gamestate.ship.velocity# + gamestate.ship.acceleration#
-	endif
-	if gamestate.ship.velocity#>gamestate.ship.max_velocity# 
-		gamestate.ship.velocity# = gamestate.ship.max_velocity#
-	endif
-	
-	if controller_y#>-0.25 and gamestate.ship.velocity# => 0
-		gamestate.ship.velocity#=gamestate.ship.velocity# - gamestate.ship.acceleration#
-	endif	
-	if gamestate.ship.velocity#<0 
-		gamestate.ship.velocity#=0
-	endif
-	calculate_heading(gamestate.ship.velocity# ,gamestate.ship.angle#, gamestate.ship.heading ) 
-	
-	
-	if GetVirtualButtonPressed(1)=1
-		startScan(gamestate)
-	endif
-	if GetVirtualButtonPressed(2)=1
-		saveMap( "testsave.ded", gamestate )
-	endif
-		if GetVirtualButtonPressed(3)=1
-		gamestate=loadMap( "testsave.ded" )
-	endif
-endfunction
-
-//do player inputs for keyboard
-function doSimPC(gamestate REF as gamestate)
-	controller_x# as float
-	controller_y# as float
-   
-   //assume ship is not turning
-   gamestate.ship.current_turning=3
-   // set slow ship turn
-    
-    if GetRawKeyState(68)
-		gamestate.ship.angle#=gamestate.ship.angle# + (gamestate.ship.turnspeed#/2)
-		gamestate.ship.current_turning=2
-	endif
-	if GetRawKeyState(65)
-		gamestate.ship.angle#=gamestate.ship.angle# - (gamestate.ship.turnspeed#/2)
-		gamestate.ship.current_turning=4
-	endif
-	//set ship fast turn
-	    if controller_x#>0.65
-		gamestate.ship.angle#=gamestate.ship.angle# + gamestate.ship.turnspeed#
-		gamestate.ship.current_turning=4
-	endif
-	if controller_x#<-0.65 
-		gamestate.ship.angle#=gamestate.ship.angle# - gamestate.ship.turnspeed#
-		gamestate.ship.current_turning=5
-	endif
-	
-	
-	gamestate.ship.angle#=Mod(gamestate.ship.angle#, 360)
-remstart	
-	if ship.angle# <= -0.1
-		ship.angle#=360
-	endif
-	if ship.angle#>=360.1
-		ship.angle# =0
-	endif
-remend		
-//check keyboard state for acceleration/decelleraion
-	if  GetRawKeyState(87)
-		gamestate.ship.velocity#=gamestate.ship.velocity# + gamestate.ship.acceleration#
-	endif
-	if gamestate.ship.velocity#>gamestate.ship.max_velocity# 
-		gamestate.ship.velocity# = gamestate.ship.max_velocity#
-	endif
-	
-	if GetRawKeyState(83)
-		gamestate.ship.velocity#=gamestate.ship.velocity# - gamestate.ship.acceleration#
-	endif	
-	if gamestate.ship.velocity#<0 
-		gamestate.ship.velocity#=0
-	endif
-	//calculate heading vector
-	calculate_heading(gamestate.ship.velocity# ,gamestate.ship.angle#, gamestate.ship.heading ) 
-	
-	//if space is pressed
-	if GetRawKeyPressed(32)=1 
-		startScan(gamestate)
-	
-	else
-		SetSpriteVisible ( scan_wave, 0 )
-	endif
-
-	
-endfunction
 
 //simulate gameworld
 function doSim(gamestate REF as gamestate)
@@ -163,12 +25,12 @@ function doSim(gamestate REF as gamestate)
 	
 
 	NGP_UpdateNetwork(networkId) 
-	
-	gamestate.ship.current_turning=3
+	//assume ship is not turning
+	gamestate.playerShip.current_turning=3
 	doScan(gamestate)
 	update_world(gamestate)
 		if IsNetworkActive(networkId)
-		doNetStuff(gamestate)
+		doNetStuff()
 	endif
 endfunction
 
@@ -178,13 +40,13 @@ function update_world(gamestate REF as gamestate)
 	positionMiniMap()
 	positionButtons()
 	positionChat()
-	//move_ship(gamestate.ship)
-	SetSpritePosition(minimap_player_ship,(GetScreenBoundsRight() - GetSpriteWidth( minimap))+(gamestate.ship.position.x/50),GetScreenBoundsTop()+gamestate.ship.position.y/50)
-	//SetSpriteAngle (minimap_player_ship, gamestate.ship.angle# )
-	//SetSpritePositionByOffset  ( player_ship, gamestate.ship.position.x, gamestate.ship.position.y )
-	//setViewOffset( gamestate.ship.position.x - getVirtualWidth() / 2.0 ,gamestate.ship.position.y - getVirtualHeight() / 2.0  )
-	SetSpriteFrame(player_ship,gamestate.ship.current_turning)
-	//SetSpriteAngle (player_ship, gamestate.ship.angle# )
+	//move_ship(gamestate.playerShip)
+	SetSpritePosition(minimap_player_ship,(GetScreenBoundsRight() - GetSpriteWidth( minimap))+(gamestate.playerShip.position.x/50),GetScreenBoundsTop()+gamestate.playerShip.position.y/50)
+	SetSpriteAngle (minimap_player_ship, gamestate.playerShip.angle# +90)
+	//SetSpritePositionByOffset  ( player_ship, gamestate.playerShip.position.x, gamestate.playerShip.position.y )
+	//setViewOffset( gamestate.playerShip.position.x - getVirtualWidth() / 2.0 ,gamestate.playerShip.position.y - getVirtualHeight() / 2.0  )
+	SetSpriteFrame(player_ship,gamestate.playerShip.current_turning)
+	//SetSpriteAngle (player_ship, gamestate.playerShip.angle# )
 endfunction		
 
 function check_refuel()
@@ -209,7 +71,7 @@ function doScan( gamestate REF as gamestate)
 			scanStart#=0
 			isScanning=0
 			//check scan was succesful and reaveal number
-			discoverNumber(gamestate.ship.position)
+			discoverNumber(gamestate.playerShip.position)
 			SetSpriteVisible ( scan_wave, 0 )
 		else
 			scanScale# as float
@@ -238,15 +100,15 @@ endfunction
 
 
 
-
-function doNetStuff(gamestate REF as gamestate)
+/****************************************************************/
+/*                  SHIP INPUTS & PHYSICS						*/
+/****************************************************************/
+function doNetStuff()
 	//// TWEEN /////////
 	FPS# as float
 	FPS#=1/GetFrameTime()
 	Tween#=60/FPS# // Movements Speed set at 60fps => it's now the reference for Tween Factor.
 	//print(str(Tween#))
-	
-   
         if IsNetworkActive(networkId)
         // if we have not set our ship colour, pick one now
             if not OwnSpriteColorChosen
@@ -255,14 +117,13 @@ function doNetStuff(gamestate REF as gamestate)
 				SetNetworkLocalInteger(networkId,"colorB",random(50,200))
 				OwnSpriteColorChosen = 1
 			endif
-			
             // print the network details and the details of this client
              
             Print("Keys:  'G' - Switch Ghost display / 'M' - Chat Message / WSAD to steer / 'SPACE' : BOOST ")
             Print("Keys:  'C' - Change Channel / N - Open/Close Network / '+' - increase net latency / '-' - decrease net latency")
-            Print("WorldStep Interval Configured : "+ str(WORLD_STEP_MS)+"ms"+" / Local Network Latency Configured : "+str(gamestate.session.NetworkLatency)+"ms")
+            Print("WorldStep: "+ str(WORLD_STEP_MS)+"ms"+" / Local Network Latency: "+str(gamestate.session.NetworkLatency)+"ms")
             print("Actual Members in Channel " + str(GetNetworkClientInteger( networkId, gamestate.session.myClientId, "SERVER_CHANNEL" ))+" :")
-			//Print("Network Clients Detected in Channel : " + Str(clientNum))
+			//Print("Clients in Channel : " + Str(clientNum))
             
             //Print("Server Id: " + Str(GetNetworkServerId(networkId)))
             //Print("Client Id: " + Str(myClientId))
@@ -270,9 +131,6 @@ function doNetStuff(gamestate REF as gamestate)
 			id as integer
             id = GetNetworkFirstClient( networkId )
             while id<>0 
-				
-				
-					
 					//NGP_NotifyClientConnect(id)
 					// Handle Connected client
 					you$ as string
@@ -285,8 +143,6 @@ function doNetStuff(gamestate REF as gamestate)
 						id = GetNetworkNextClient( networkId )
 						continue
 					endif
-					
-					
 					
 					// Update Sprite Color from Client
 					SpriteToColorize as integer
@@ -313,8 +169,6 @@ function doNetStuff(gamestate REF as gamestate)
 				
 			id = GetNetworkNextClient( networkId )
 			endwhile
-          
-           
             
         else
             Print("Network Inactive")
@@ -332,64 +186,62 @@ function doNetStuff(gamestate REF as gamestate)
     endif
 
 
-
-
 /****************************************************************/
 /*                  SHIP INPUTS & PHYSICS						*/
 /****************************************************************/
 
 
-	if gamestate.ship.velocity#>ShipMaxSpeed# then gamestate.ship.velocity#=ShipMaxSpeed#
-	if gamestate.ship.velocity#<-ShipMaxSpeed# then gamestate.ship.velocity#=-ShipMaxSpeed#
+	if gamestate.playerShip.velocity#>ShipMaxSpeed# then gamestate.playerShip.velocity#=ShipMaxSpeed#
+	if gamestate.playerShip.velocity#<-ShipMaxSpeed# then gamestate.playerShip.velocity#=-ShipMaxSpeed#
 	
 	// Inertia
-	if GetRawKeyState(38)=0 and GetRawKeyState(40)=0 and GetVirtualJoystickY( 1 )=0 and GetJoystickY()=0
-		if gamestate.ship.velocity#>0 then gamestate.ship.velocity#=gamestate.ship.velocity#-(0.01* Tween#)
-		if gamestate.ship.velocity#<0 then gamestate.ship.velocity#=gamestate.ship.velocity#+(0.01* Tween#)
-		if gamestate.ship.velocity#>-0.02 and gamestate.ship.velocity#<0.020 then gamestate.ship.velocity#=0
+	if GetRawKeyState(87)=0 and GetRawKeyState(83)=0 and GetVirtualJoystickY( 1 )=0 and GetJoystickY()=0
+		if gamestate.playerShip.velocity#>0 then gamestate.playerShip.velocity#=gamestate.playerShip.velocity#-(0.01* Tween#)
+		if gamestate.playerShip.velocity#<0 then gamestate.playerShip.velocity#=gamestate.playerShip.velocity#+(0.01* Tween#)
+		if gamestate.playerShip.velocity#>-0.02 and gamestate.playerShip.velocity#<0.020 then gamestate.playerShip.velocity#=0
 	endif
 
 
 
-	if abs(gamestate.ship.velocity#)>2.0
-		gamestate.ship.turnspeed# = (3/gamestate.ship.velocity#) * Tween#
+	if abs(gamestate.playerShip.velocity#)>2.0
+		gamestate.playerShip.turnspeed# = (3/gamestate.playerShip.velocity#) * Tween#
 	else
-		gamestate.ship.turnspeed#=12/2
+		gamestate.playerShip.turnspeed#=12/2
 	endif
-	print("ClientShipSpeed " +str(gamestate.ship.velocity#))
+	print("ClientShipSpeed " +str(gamestate.playerShip.velocity#))
 	// Send Movements only when Speed != 0 // Calculate the velocity vectors along X,Y with car rotation (shipAngle variable)
-	if gamestate.ship.velocity#<>0 
+	if gamestate.playerShip.velocity#<>0 
 	
-		NGP_SendMovement(networkId, POS_X, 1, (cos(gamestate.ship.Angle#)* Tween#)*gamestate.ship.velocity#*UseBoost)
-		NGP_SendMovement(networkId, POS_Y, 1, (sin(gamestate.ship.Angle#)* Tween#)*gamestate.ship.velocity#*UseBoost)	
+		NGP_SendMovement(networkId, POS_X, 1, (cos(gamestate.playerShip.Angle#)* Tween#)*gamestate.playerShip.velocity#*UseBoost)
+		NGP_SendMovement(networkId, POS_Y, 1, (sin(gamestate.playerShip.Angle#)* Tween#)*gamestate.playerShip.velocity#*UseBoost)	
 		UseBoost=1	
 	endif
 
 	// Keys Movements
 
 	if GetEditBoxHasFocus(chat_edit_text) = 0
-			//if """ or Joystick down is pressed, speed up
+			//if "W" or Joystick down is pressed, speed up
 			if GetRawKeyState(87) or GetVirtualJoystickY( 1 )<0 or GetJoystickY()<0 // UP
 				print("up!")
-				gamestate.ship.velocity#=gamestate.ship.velocity#+(0.01* Tween#)
+				gamestate.playerShip.velocity#=gamestate.playerShip.velocity#+(0.01* Tween#)
 
 			endif
 			//if "A" or Joystick left is pressed, turn left
 			if GetRawKeyState(65) or GetVirtualJoystickX( 1 )<0 or GetJoystickX()<0 // LEFT
 				print("left!")
-				gamestate.ship.Angle#=gamestate.ship.Angle#-2.0*gamestate.ship.turnspeed#
-				NGP_SendMovement(networkId, ANG_Y, -1,2.0*gamestate.ship.turnspeed#)
+				gamestate.playerShip.Angle#=gamestate.playerShip.Angle#-2.0*gamestate.playerShip.turnspeed#
+				NGP_SendMovement(networkId, ANG_Y, -1,2.0*gamestate.playerShip.turnspeed#)
 			endif
 			//if "D" or Joystick right is pressed, turn right
 			if GetRawKeyState(68) or GetVirtualJoystickX( 1 )>0 or GetJoystickX()>0 // RIGHT
 				print("right!")
-				gamestate.ship.Angle#=gamestate.ship.Angle#+2.0*gamestate.ship.turnspeed#
-				NGP_SendMovement(networkId, ANG_Y, 1,2.0*gamestate.ship.turnspeed#)
+				gamestate.playerShip.Angle#=gamestate.playerShip.Angle#+2.0*gamestate.playerShip.turnspeed#
+				NGP_SendMovement(networkId, ANG_Y, 1,2.0*gamestate.playerShip.turnspeed#)
 			endif
 			//if "S" or Joystick down is pressed, slow down
 			if GetRawKeyState(83) or GetVirtualJoystickY( 1 )>0 or GetJoystickY()>0 // BREAKs / Reverse
 				print("down!")
-				gamestate.ship.velocity#=gamestate.ship.velocity#-(0.01* Tween#)
+				gamestate.playerShip.velocity#=gamestate.playerShip.velocity#-(0.01* Tween#)
 
 			endif
 			
@@ -397,27 +249,8 @@ function doNetStuff(gamestate REF as gamestate)
 				print("Boost !")
 				UseBoost=1.5
 			endif
+			
 	endif	
-	
-	
-/****************************************************************/
-/*                  OTHER INPUTS								*/
-/****************************************************************/	
- 	if GetRawKeyReleased(27) // Escape => Quit
-		
-		if IsNetworkActive(networkId)
-			NGP_CloseNetwork(networkId)
-		endif
-		
-		end
-	endif
-
-	
-	if GetRawKeyReleased(77) or ( GetPointerState() and  GetPointerX()>360 and GetPointerX()<916 and GetPointerY()>290 and GetPointerY()<505 ) // M => Send new message
-		SetTextVisible(chat_header_text,1)
-		SetEditBoxVisible(chat_edit_text,1)
-		SetEditBoxFocus(chat_edit_text,1)
-	endif
 	
 	if GetEditBoxHasFocus( chat_edit_text ) = 1 and ChatEditFocus = 0
 		//We Gain Focus
@@ -444,11 +277,11 @@ function doNetStuff(gamestate REF as gamestate)
 	endif
 	
 	
-		if GetEditBoxHasFocus(chat_edit_text) = 0 // if we are not chatting, capture keys pressed
-					
-					detectKeys()
+		if GetEditBoxHasFocus(chat_edit_text) = 0 // if we are not chatting, capture keys pressed		
+			detectKeys()
 		endif
-    
+	//check virtual buttons for input
+     virtualInput()
     //// Update Messages ChatBox
     offset as integer
     offset = ChatMessages.length
@@ -460,12 +293,25 @@ function doNetStuff(gamestate REF as gamestate)
 		ChatBox$ = ChatBox$ + chr(10) + ChatMessages[i]
 	next i
 	SetTextString(incoming_chat_text,ChatBox$)
-    
-    
-    
 endfunction
-
+/****************************************************************/
+/*                 KEYBOARD INPUTS  							*/
+/****************************************************************/	
 function detectKeys()
+	// if Escape, Quit
+ 	if GetRawKeyReleased(27) 
+		if IsNetworkActive(networkId)
+			NGP_CloseNetwork(networkId)
+		endif
+		end
+	endif
+	 // if "M" Send new message
+	if GetRawKeyReleased(77) or ( GetPointerState() and  GetPointerX()>360 and GetPointerX()<916 and GetPointerY()>290 and GetPointerY()<505 )
+		//make chatbo visible
+		SetTextVisible(chat_header_text,1)
+		SetEditBoxVisible(chat_edit_text,1)
+		SetEditBoxFocus(chat_edit_text,1)
+	endif
 	// if "+" pressed increase latency
 	if GetRawKeyState(187) 
 		gamestate.session.NetworkLatency = gamestate.session.NetworkLatency+1
@@ -495,5 +341,20 @@ function detectKeys()
 			// join the network
 		networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$, gamestate.session.NetworkLatency)
 		endif
+	endif
+endfunction
+/****************************************************************/
+/*                 VIRTUAL BUTTON INPUTS 						*/
+/****************************************************************/	
+function virtualInput()
+	
+	if GetVirtualButtonPressed(1)=1
+		startScan(gamestate)
+	endif
+	if GetVirtualButtonPressed(2)=1
+		saveMap( "testsave.ded", gamestate )
+	endif
+		if GetVirtualButtonPressed(3)=1
+		gamestate=loadMap( "testsave.ded" )
 	endif
 endfunction

@@ -4,8 +4,6 @@
 function load_assets (gamestate REF as gamestate)
 	// generate mipmaps for loaded images
 	SetGenerateMipmaps(1)
-	load_font()
-	
 	load_stars(gamestate)
 	load_sun(gamestate)
 	//create minimap, all screen elements rendered prior are displayed
@@ -35,20 +33,16 @@ function load_station(gamestate REF as gamestate)
 	next index
 endfunction
 
+//setup playr minimap sprite
 function load_ship()
-	
 	LoadImage (minimap_player_ship, "minimap_ship.png")
-	
 	//minimap sprite
 	CreateSprite (minimap_player_ship,minimap_player_ship)
-
 	SetSpriteScale(minimap_player_ship,0.04,0.04) 
 	FixSpriteToScreen(minimap_player_ship,1)
-
-
-
 endfunction
 
+//setup player ship sprite
 function CreateLocalShipSprite()
 	// Local Player Sprite
 	LoadImage ( player_ship, "ship01.png" )
@@ -69,9 +63,9 @@ function CreateLocalShipSprite()
 	SetTextAlignment( localNickLabel, 1 )
 	SetTextSize(localNickLabel,5)
 	SetTextFont(localNickLabel,main_font)
-	gamestate.ship.Angle# = 0
-	gamestate.ship.velocity#= 0
-	gamestate.ship.turnspeed# = 0
+	gamestate.playerShip.Angle# = 0
+	gamestate.playerShip.velocity#= 0
+	gamestate.playerShip.turnspeed# = 0
 	//set collision on ship to fit sprite image
 	SetSpriteShape(player_ship, 3)
 endfunction
@@ -126,8 +120,8 @@ endfunction
 
 function load_music()
 	LoadMusicOGG( 1, "bensound-acousticbreeze.ogg" ) 
-	//PlayMusicOGG( 1, 1 ) 
-	
+	PlayMusicOGG( 1, 1 ) 
+	SetMusicVolumeOGG( 1, 5 ) 
 	LoadSound (scan_sound, "scan.wav" )
 	LoadSound (scan_success, "goodscan.wav" )
 	LoadSound (scan_fail, "badscan.wav" )

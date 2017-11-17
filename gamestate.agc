@@ -1,5 +1,9 @@
+/****************************************************************/
+/*                  MAIN DATA STRUCTURE 						*/
+/****************************************************************/
+
 type gamestate
-    ship as ship
+    playerShip as ship
     session as session
 	planets as planet[20]
 	stations as station[10]

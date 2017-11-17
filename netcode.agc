@@ -6,10 +6,14 @@
 /******************************************************/
 //set up minimum 
 function setupNetSession()
+	nickname$ as string
+	//get player name
+	 //-20,GetScreenBoundsBottom()-20
+	nickname$ = TextInput("EnterName"+right(str(GetMilliseconds()),3),GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
 	gamestate.session.ServerHost$ = "192.168.0.11" // IP Of MikeMax Linux Box for testing :)
 	gamestate.session.ServerPort =33333
 	gamestate.session.NetworkLatency = 25 // Should always be less than the NETGAMEPLUGIN_WORLDSTATE_INTERVAL defined in the server plugin
-	gamestate.session.clientName$="Rich"
+	gamestate.session.clientName$=nickname$
 	networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$ , gamestate.session.NetworkLatency)
 endfunction
 /******************************************************/
@@ -100,6 +104,8 @@ endfunction
 /********************************************************************************/
 function NGP_onLocalPlayerMoveUpdate(iNetID, UpdatedMove as NGP_Slot)
 	Print("server co-ord "+ str(UpdatedMove.Slot[POS_X]) +" "+str(UpdatedMove.Slot[POS_Y]))
+	gamestate.playership.position.x= UpdatedMove.Slot[POS_X] 
+	gamestate.playership.position.y= UpdatedMove.Slot[POS_Y] 
 	SetSpritePositionByOffset(player_ship,UpdatedMove.Slot[POS_X] ,UpdatedMove.Slot[POS_Y])
 	setViewOffset( UpdatedMove.Slot[POS_X] - getVirtualWidth() / 2.0 ,UpdatedMove.Slot[POS_Y] - getVirtualHeight() / 2.0  )
 	SetSpriteAngle(player_ship,UpdatedMove.Slot[ANG_Y]+90)
