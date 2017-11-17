@@ -1,4 +1,17 @@
-
+/******************************************************/
+/*                   Networking code                  */
+/*deal with forming and controlling network connections*/
+/*intercept network events and act on them. Encode/decode*/
+/* network message IDs to resolve specific command types*/
+/******************************************************/
+//set up minimum 
+function setupNetSession()
+	gamestate.session.ServerHost$ = "192.168.0.11" // IP Of MikeMax Linux Box for testing :)
+	gamestate.session.ServerPort =33333
+	gamestate.session.NetworkLatency = 25 // Should always be less than the NETGAMEPLUGIN_WORLDSTATE_INTERVAL defined in the server plugin
+	gamestate.session.clientName$="Rich"
+	networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$ , gamestate.session.NetworkLatency)
+endfunction
 /******************************************************/
 /* When local client has disconnected from the server */
 /******************************************************/
@@ -11,7 +24,7 @@ endfunction
 /* When local client has joined the server */
 /*******************************************/
 function NGP_onNetworkJoined(iNetID, localClientID)
-	myClientId=localClientID
+	gamestate.session.myClientId=localClientID
 	OwnSpriteColorChosen=0
 	//createChatBox()
 	CreateLocalShipSprite() // Create local direct sprite for the local client 
@@ -110,7 +123,7 @@ function NGP_onNetworkPlayerMoveUpdate(iNetID, ClientID as integer, UpdatedMove 
 		SetTextPosition(LabelID,UpdatedMove.Slot[POS_X] ,UpdatedMove.Slot[POS_Y]-10)
 			SetTextSize(LabelID,5)
 	SetTextFont(LabelID,main_font)
-		if ClientID = myClientId   
+		if ClientID = gamestate.session.myClientId   
 			 
 			 // Hide Ghost Sprite and TextLabel
 			 SetSpriteVisible(SpriteID,displayGhost) // <-- Key "G" to switch displayGhost
@@ -162,7 +175,7 @@ function NGP_onNetworkPlayerConnect(iNetID, ClientID)
 	////// Creating a Text on the sprite
 		TextToShow$ as string
 		// Choosing Text to show
-		if ClientID = myClientId
+		if ClientID = gamestate.session.myClientId
 			TextToShow$ = "Network GHOST" 
 		else
 			TextToShow$ = GetNetworkClientName( iNetID, ClientID )

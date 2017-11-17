@@ -21,7 +21,7 @@ SetErrorMode(2)
 #include "NetGamePlugin.agc"
 #include "netcode.agc"
 #include "chat.agc"
-#constant debug =0
+#constant debug =1
 
 // set window properties
 SetWindowTitle( "Starfield" )
@@ -35,10 +35,11 @@ SetSyncRate( 30, 0 ) // 30fps instead of 60 to save battery
 SetScissor( 0,0,0,0 ) // use the maximum available screen space, no black borders
 UseNewDefaultFonts( 1 ) // since version 2.0.22 we can use nicer default fonts
 SetDisplayAspect(1.0)
-gamestate as gamestate
-global nickname$ as string= "rich2"
+SetPrintSize( 2 ) 
+global gamestate as gamestate
 global ChatEditFocus
-networkId = NGP_JoinNetwork(ServerHost$,ServerPort, nickname$ , NetworkLatency)
+setupNetSession()
+
 //setup planets
 populate_planets(gamestate.planets)
 load_assets(gamestate)
@@ -70,16 +71,16 @@ do
 	//simulate game
 	doSim(gamestate)
 	
-	//draw map background
-	//DrawBox(MapX0#,MapY0#,MapX1#,MapY1#, MakeColor(0,0,0),MakeColor(0,0,0),MakeColor(0,0,0),MakeColor(0,0,0),1)
-	//hide starfield
 
     Print( ScreenFPS() )
 
 	//print("ship heading " + str(gamestate.ship.heading.x) +"   "+ str(gamestate.ship.heading.x))
-	print("ship pos " + str(gamestate.ship.position.x)+" "+str(gamestate.ship.position.y))
-	print(GetWritePath())
-	print (GetScreenBoundsTop()) 
+	//Print debug
+	if debug=1
+		print("ship pos " + str(gamestate.ship.position.x)+" "+str(gamestate.ship.position.y))
+		print(GetWritePath())
+		print (GetScreenBoundsTop()) 
+		endif
 	//SetClearColor(7,15,51)
     Sync()
 loop

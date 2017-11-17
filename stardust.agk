@@ -49,12 +49,12 @@ FILE_5=netcode.agc;-1
 FILE_6=chat.agc;-1
 
 [files]
-FILE_NAME_0=0;main.agc;1183;0
-FILE_NAME_1=0;particle.agc;76;1
-FILE_NAME_2=0;interface.agc;258;2
-FILE_NAME_3=0;fileops.agc;253;3
-FILE_NAME_4=0;netcode.agc;174;11
-FILE_NAME_5=1;chat.agc;0;13
+FILE_NAME_0=0;main.agc;1175;0
+FILE_NAME_1=0;minimap.agc;1751;10
+FILE_NAME_2=0;interface.agc;52;1
+FILE_NAME_3=0;fileops.agc;253;2
+FILE_NAME_4=0;netcode.agc;520;8
+FILE_NAME_5=0;chat.agc;331;9
 
 [project]
 description=

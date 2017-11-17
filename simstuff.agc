@@ -10,18 +10,12 @@ global localSprite as integer
 global displayGhost as integer
 global Tween#
 global OwnSpriteColorChosen as integer
-global shipAngle# as float
-global shipSpeed# as float
-global shipAngleFactor# as float
+
 global UseBoost as integer
 
-global carMaxSpeed# as float= 4.0
+global ShipMaxSpeed# as float= 4.0
 global networkId
-global myClientId
-global ServerHost$ as string = "192.168.0.11" // IP Of MikeMax Linux Box for testing :)
 
-global ServerPort as integer=33333
-global NetworkLatency as integer = 25 // Should always be less than the NETGAMEPLUGIN_WORLDSTATE_INTERVAL defined in the server plugin
 
 global isScanning as integer=0
 global scanStart# as float =0
@@ -263,12 +257,11 @@ function doNetStuff(gamestate REF as gamestate)
 			endif
 			
             // print the network details and the details of this client
-            
-            Print("Keys:  'G' - Switch Ghost display / 'M' - Chat Message / Arrow Keys : Move Car / 'SPACE' : BOOST / 'C' - Change Channel / N - Open/Close Network")
-            Print("AGKServer Example App - Network Active")
-            //print("FPS : "+str(ScreenFPS()))
-			Print("WorldStep Interval Configured : "+ str(WORLD_STEP_MS)+"ms"+" / Local Network Latency Configured : "+str(NetworkLatency)+"ms")
-            print("Actual Members in Channel " + str(GetNetworkClientInteger( networkId, myClientId, "SERVER_CHANNEL" ))+" :")
+             
+            Print("Keys:  'G' - Switch Ghost display / 'M' - Chat Message / WSAD to steer / 'SPACE' : BOOST ")
+            Print("Keys:  'C' - Change Channel / N - Open/Close Network / '+' - increase net latency / '-' - decrease net latency")
+            Print("WorldStep Interval Configured : "+ str(WORLD_STEP_MS)+"ms"+" / Local Network Latency Configured : "+str(gamestate.session.NetworkLatency)+"ms")
+            print("Actual Members in Channel " + str(GetNetworkClientInteger( networkId, gamestate.session.myClientId, "SERVER_CHANNEL" ))+" :")
 			//Print("Network Clients Detected in Channel : " + Str(clientNum))
             
             //Print("Server Id: " + Str(GetNetworkServerId(networkId)))
@@ -283,7 +276,7 @@ function doNetStuff(gamestate REF as gamestate)
 					//NGP_NotifyClientConnect(id)
 					// Handle Connected client
 					you$ as string
-					 if id = myClientId then you$="(You)" else you$="" 
+					 if id = gamestate.session.myClientId then you$="(You)" else you$="" 
 					
 					print( "- Client ID " + str(id) + " > "+GetNetworkClientName( networkId, id )+" "+you$)
 						
@@ -305,7 +298,7 @@ function doNetStuff(gamestate REF as gamestate)
 						colorG=GetNetworkClientInteger(networkId,id,"colorG")
 						colorB=GetNetworkClientInteger(networkId,id,"colorB")
 						AlphaSprite as integer
-						if id=myClientId 
+						if id=gamestate.session.myClientId 
 							AlphaSprite=150 // This for the ghost !
 							SetSpriteColor(player_ship,colorR,colorG,colorB,255) // Colorize Local sprite with full alpha 
 							else
@@ -342,59 +335,62 @@ function doNetStuff(gamestate REF as gamestate)
 
 
 /****************************************************************/
-/*                  CAR INPUTS & PHYSICS						*/
+/*                  SHIP INPUTS & PHYSICS						*/
 /****************************************************************/
 
 
-	if shipSpeed#>carMaxSpeed# then shipSpeed#=carMaxSpeed#
-	if shipSpeed#<-carMaxSpeed# then shipSpeed#=-carMaxSpeed#
+	if gamestate.ship.velocity#>ShipMaxSpeed# then gamestate.ship.velocity#=ShipMaxSpeed#
+	if gamestate.ship.velocity#<-ShipMaxSpeed# then gamestate.ship.velocity#=-ShipMaxSpeed#
 	
 	// Inertia
 	if GetRawKeyState(38)=0 and GetRawKeyState(40)=0 and GetVirtualJoystickY( 1 )=0 and GetJoystickY()=0
-		if shipSpeed#>0 then shipSpeed#=shipSpeed#-(0.01* Tween#)
-		if shipSpeed#<0 then shipSpeed#=shipSpeed#+(0.01* Tween#)
-		if shipSpeed#>-0.02 and shipSpeed#<0.020 then shipSpeed#=0
+		if gamestate.ship.velocity#>0 then gamestate.ship.velocity#=gamestate.ship.velocity#-(0.01* Tween#)
+		if gamestate.ship.velocity#<0 then gamestate.ship.velocity#=gamestate.ship.velocity#+(0.01* Tween#)
+		if gamestate.ship.velocity#>-0.02 and gamestate.ship.velocity#<0.020 then gamestate.ship.velocity#=0
 	endif
 
 
 
-	if abs(shipSpeed#)>2.0
-		shipAngleFactor# = (3/shipSpeed#) * Tween#
+	if abs(gamestate.ship.velocity#)>2.0
+		gamestate.ship.turnspeed# = (3/gamestate.ship.velocity#) * Tween#
 	else
-		shipAngleFactor#=12/2
+		gamestate.ship.turnspeed#=12/2
 	endif
-	print("ClientShipSpeed " +str(shipSpeed#))
+	print("ClientShipSpeed " +str(gamestate.ship.velocity#))
 	// Send Movements only when Speed != 0 // Calculate the velocity vectors along X,Y with car rotation (shipAngle variable)
-	if shipSpeed#<>0 
+	if gamestate.ship.velocity#<>0 
 	
-		NGP_SendMovement(networkId, POS_X, 1, (cos(shipAngle#)* Tween#)*shipSpeed#*UseBoost)
-		NGP_SendMovement(networkId, POS_Y, 1, (sin(shipAngle#)* Tween#)*shipSpeed#*UseBoost)	
+		NGP_SendMovement(networkId, POS_X, 1, (cos(gamestate.ship.Angle#)* Tween#)*gamestate.ship.velocity#*UseBoost)
+		NGP_SendMovement(networkId, POS_Y, 1, (sin(gamestate.ship.Angle#)* Tween#)*gamestate.ship.velocity#*UseBoost)	
 		UseBoost=1	
 	endif
 
 	// Keys Movements
 
 	if GetEditBoxHasFocus(chat_edit_text) = 0
-			if GetRawKeyState(38) or GetVirtualJoystickY( 1 )<0 or GetJoystickY()<0 // UP
+			//if """ or Joystick down is pressed, speed up
+			if GetRawKeyState(87) or GetVirtualJoystickY( 1 )<0 or GetJoystickY()<0 // UP
 				print("up!")
-				shipSpeed#=shipSpeed#+(0.01* Tween#)
+				gamestate.ship.velocity#=gamestate.ship.velocity#+(0.01* Tween#)
+
 			endif
-			
-			if GetRawKeyState(37) or GetVirtualJoystickX( 1 )<0 or GetJoystickX()<0 // LEFT
+			//if "A" or Joystick left is pressed, turn left
+			if GetRawKeyState(65) or GetVirtualJoystickX( 1 )<0 or GetJoystickX()<0 // LEFT
 				print("left!")
-				shipAngle#=shipAngle#-2.0*shipAngleFactor#
-				NGP_SendMovement(networkId, ANG_Y, -1,2.0*shipAngleFactor#)
+				gamestate.ship.Angle#=gamestate.ship.Angle#-2.0*gamestate.ship.turnspeed#
+				NGP_SendMovement(networkId, ANG_Y, -1,2.0*gamestate.ship.turnspeed#)
 			endif
-			
-			if GetRawKeyState(39) or GetVirtualJoystickX( 1 )>0 or GetJoystickX()>0 // RIGHT
+			//if "D" or Joystick right is pressed, turn right
+			if GetRawKeyState(68) or GetVirtualJoystickX( 1 )>0 or GetJoystickX()>0 // RIGHT
 				print("right!")
-				shipAngle#=shipAngle#+2.0*shipAngleFactor#
-				NGP_SendMovement(networkId, ANG_Y, 1,2.0*shipAngleFactor#)
+				gamestate.ship.Angle#=gamestate.ship.Angle#+2.0*gamestate.ship.turnspeed#
+				NGP_SendMovement(networkId, ANG_Y, 1,2.0*gamestate.ship.turnspeed#)
 			endif
-			
-			if GetRawKeyState(40) or GetVirtualJoystickY( 1 )>0 or GetJoystickY()>0 // BREAKs / Reverse
+			//if "S" or Joystick down is pressed, slow down
+			if GetRawKeyState(83) or GetVirtualJoystickY( 1 )>0 or GetJoystickY()>0 // BREAKs / Reverse
 				print("down!")
-				shipSpeed#=shipSpeed#-(0.01* Tween#)
+				gamestate.ship.velocity#=gamestate.ship.velocity#-(0.01* Tween#)
+
 			endif
 			
 			if GetRawKeyState(32) // SPACE
@@ -432,7 +428,7 @@ function doNetStuff(gamestate REF as gamestate)
 		//We lost Focus, consider message validation with ENTER
 		if len(TrimString(GetEditBoxText(chat_edit_text)," "))>0
 				// Add message to local queue
-				ChatMessages.insert(GetNetworkClientName(networkId, myClientId)+" : "+GetEditBoxText(chat_edit_text))
+				ChatMessages.insert(GetNetworkClientName(networkId, gamestate.session.myClientId)+" : "+GetEditBoxText(chat_edit_text))
 				////// Send Message //////
 				newMsg as integer
 				newMsg=CreateNetworkMessage()
@@ -449,43 +445,8 @@ function doNetStuff(gamestate REF as gamestate)
 	
 	
 		if GetEditBoxHasFocus(chat_edit_text) = 0 // if we are not chatting, capture keys pressed
-	
-						if GetRawKeyState(187) 
-							 NetworkLatency = NetworkLatency+1
-							 SetNetworkLatency(networkId,NetworkLatency)
-						endif
-						
-						if GetRawKeyState(189)
-							 NetworkLatency = NetworkLatency-1
-							  SetNetworkLatency(networkId,NetworkLatency)
-						endif
-					   
-						
-						
-						
-						if GetRawKeyReleased(71) // G to swith Ghost Mode
-							
-							displayGhost = not displayGhost
-							
-						endif
-					   
-						if GetRawKeyReleased(67) // C // Change Channel
-							
-								SetNetworkLocalInteger( networkId, "SERVER_CHANNEL", val(TextInput("Channel_number?",100,100)) )
-						
-						endif  
-						if GetRawKeyReleased(78) // N // Network connect switch  
-							CurrentNetState as integer     
-							CurrentNetState=NGP_GetNetworkState()
-							
-							if CurrentNetState = 1 // if connected
-								// disconnect from the network
-								NGP_CloseNetwork(networkId)
-							elseif CurrentNetState < 0 // if NOT connected
-								// join the network
-								networkId = NGP_JoinNetwork(ServerHost$,ServerPort, nickname$, NetworkLatency)
-							endif
-						endif
+					
+					detectKeys()
 		endif
     
     //// Update Messages ChatBox
@@ -502,4 +463,37 @@ function doNetStuff(gamestate REF as gamestate)
     
     
     
+endfunction
+
+function detectKeys()
+	// if "+" pressed increase latency
+	if GetRawKeyState(187) 
+		gamestate.session.NetworkLatency = gamestate.session.NetworkLatency+1
+		SetNetworkLatency(networkId,gamestate.session.NetworkLatency)
+	endif
+	// if "-" pressed decrease latency
+	if GetRawKeyState(189)
+		gamestate.session.NetworkLatency = gamestate.session.NetworkLatency-1
+		SetNetworkLatency(networkId,gamestate.session.NetworkLatency)
+	endif
+	// if "G" pressed toggle Ghost Mode
+	if GetRawKeyReleased(71) 
+		displayGhost = not displayGhost
+	endif
+	// if "C"  Change Channel
+	if GetRawKeyReleased(67) 
+		SetNetworkLocalInteger( networkId, "SERVER_CHANNEL", val(TextInput("Channel_number?",100,100)) )
+	endif  
+	// if "N" Network connect switch  
+	if GetRawKeyReleased(78) 
+		CurrentNetState as integer     
+		CurrentNetState=NGP_GetNetworkState()
+		if CurrentNetState = 1 // if connected
+			// disconnect from the network
+			NGP_CloseNetwork(networkId)
+		elseif CurrentNetState < 0 // if NOT connected
+			// join the network
+		networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$, gamestate.session.NetworkLatency)
+		endif
+	endif
 endfunction

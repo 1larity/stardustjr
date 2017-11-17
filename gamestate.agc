@@ -1,5 +1,6 @@
 type gamestate
     ship as ship
+    session as session
 	planets as planet[20]
 	stations as station[10]
 	settings as settings
@@ -49,3 +50,11 @@ type settings
 	dialogue_volume as integer
 	fps as integer
 endtype	
+
+type session
+	clientName$ as String	//player's nickname
+	ServerHost$ as string	// IP Of Server
+	ServerPort as integer	//server port
+	NetworkLatency as integer//network latency
+	myClientId as integer
+endtype

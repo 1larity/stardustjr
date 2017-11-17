@@ -69,9 +69,9 @@ function CreateLocalShipSprite()
 	SetTextAlignment( localNickLabel, 1 )
 	SetTextSize(localNickLabel,5)
 	SetTextFont(localNickLabel,main_font)
-	shipAngle# = 0
-	shipSpeed#= 0
-	shipAngleFactor# = 0
+	gamestate.ship.Angle# = 0
+	gamestate.ship.velocity#= 0
+	gamestate.ship.turnspeed# = 0
 	//set collision on ship to fit sprite image
 	SetSpriteShape(player_ship, 3)
 endfunction
