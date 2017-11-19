@@ -23,7 +23,8 @@ SetErrorMode(2)
 #include "netcode.agc"
 #include "chat.agc"
 #include "circle.agc"
-#constant debug =1
+#constant debug =0
+#constant deepdebug =1
 global gamestate as gamestate
 global ChatEditFocus
 //setup screen
@@ -64,7 +65,7 @@ do
 
 	//print("ship heading " + str(gamestate.playerShip.heading.x) +"   "+ str(gamestate.playerShip.heading.x))
 	//Print debug
-	if debug=1
+	if debug=1 and deepdebug=1
 		  Print( ScreenFPS() )
 		print("ship pos " + str(gamestate.playerShip.position.x)+" "+str(gamestate.playerShip.position.y))
 		print(GetWritePath())

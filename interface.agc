@@ -8,7 +8,7 @@ set_scan_button()
 set_save_button()
 set_load_button()	
 set_mine_button()	
-
+ui_text()
 endfunction
 //setup virtual joystick
 function set_virtual_joystick()
@@ -97,21 +97,30 @@ function set_mine_button()
 endfunction
 // setup chatbox for the first time
 function createChatBox(chatPosLeft as float, chatPosBottom as float)
-
 incoming_chat_text=createSDtxbox("Welcome to chat.",GetScreenBoundsLeft()+20,74,20)
-// Display the Chat title
-CreateText(chat_header_text,"Chat : ")
-FixTextToScreen(chat_header_text,1)
-SetTextPosition(chat_header_text,GetScreenBoundsLeft()+20,70)
-SetTextSize(chat_header_text,3)
-SetTextFont(chat_header_text, main_font)
-//SetTextColor(LabelMessage,255,255,255,255)
-SetTextVisible(chat_header_text,1)
 chat_edit_text=createSDtxbox("Type chat here.",GetScreenBoundsLeft()+20,97,3)
 ChatEditFocus = 0
-sync()
+//sync()
 endfunction
 
+//display the player's co-ordinate under minimap
+function ui_text()
+// Display stuff under minimap
+//co-ords
+createSDtext(co_ords_text,"pos: ",GetScreenBoundsRight()-20,20)
+//speedo
+createSDtext(speed_text,"0.0km/s ",GetScreenBoundsRight(),22)
+createSDtext(speed_title,"speed:",GetScreenBoundsRight()-20,22)
+//align right
+SetTextAlignment( speed_text, ARIGHT ) 
+//creds display
+createSDtext(red_creds,"zero red ",GetScreenBoundsRight()-18,24)
+createSDtext(blue_creds,"zero blue ",GetScreenBoundsRight()-18,26)
+createSDtext(green_creds,"zero green ",GetScreenBoundsRight()-18,28)
+//display chat header
+createSDtext(chat_header_text,"Chat: ",GetScreenBoundsLeft()+20,70)
+
+endfunction
 //reposition buttons to lower left of screen
 function positionButtons()
 	SetVirtualButtonPosition(1,GetScreenBoundsLeft()+10,80)
@@ -130,9 +139,12 @@ function positionChat()
 	SetTextPosition(chat_header_text,GetScreenBoundsLeft()+20,70)
 	SetEditBoxPosition(chat_edit_text,GetScreenBoundsLeft()+20,95.0)
 	SetEditBoxSize(chat_edit_text,GetScreenBoundsRight()-40,5)	
+	//map co-ords text
+	SetTextPosition(co_ords_text,GetScreenBoundsRight()-20,20)
 endfunction
-
-//creates text boxes with fixed style
+/**********************************************************/
+/*			 creates textboxes with fixed style 					*/ 
+/**********************************************************/
 function createSDtxbox(default$ as string,left# as float, bottom# as float, height as integer)
 	ReturnValue as integer
 	tmpEditBox as integer
@@ -152,6 +164,25 @@ SetEditBoxBackgroundColor(tmpEditBox, 100, 100, 100, 50)
 SetEditBoxTextColor(tmpEditBox,0,0,0)
 SetEditBoxBorderSize( tmpEditBox, 0.1 ) 
 SetEditBoxBorderColor( tmpEditBox, 100, 100,255, 50 ) 
-//SetEditBoxVisible(incoming_chat_text,1)
 ReturnValue=tmpEditBox
 endfunction ReturnValue
+
+/**********************************************************/
+/*			 creates text with fixed style 					*/ 
+/**********************************************************/
+function createSDtext(id as integer, default$ as string,left# as float, bottom# as float)
+
+	CreateText(id,default$)
+
+//set font and textsize
+SetTextFont( id, main_font)
+SetTextSize( id, 2 )
+SetTextString(id,default$)
+//make sure it doesn'y move about the viewport
+FixTextToScreen(id,1)
+//position it
+SetTextPosition(id,left#,bottom#)
+//apply colours & style
+SetTextColor(id,255,255,255,255)
+
+endfunction 

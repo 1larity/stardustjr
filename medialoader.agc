@@ -144,7 +144,7 @@ function randomStars()
 	starscale# as float 
 	
 	index as integer
-	for index=0 to 1000
+	for index=0 to 5000
 		starscale#= Random(2,20)/500.0
 		CreateSprite(500+index,50)
 		SetSpriteDepth(index+500,51)

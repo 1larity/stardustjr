@@ -2,7 +2,8 @@ function discoverNumber(position as Vector2D)
 		//play sucessful scan sound
 		PlaySound ( scan_success )
 		 // set up particles
-        SetParticlesPosition ( discoveryParticles, position.x+50, position.y+50 )
+        SetParticlesPosition ( discoveryParticles, position.x, position.y)
+       // FixParticlesToScreen(discoveryParticles,1)
         ResetParticleCount ( discoveryParticles )
         SetParticlesFrequency ( discoveryParticles, 250 )
         SetParticlesLife ( discoveryParticles, 2.5 )

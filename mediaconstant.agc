@@ -23,6 +23,18 @@
 #constant mine_button_text=4
 //Editbox ID of main chatbox
 global incoming_chat_text as integer
-#constant chat_header_text=6000
+
 global chat_edit_text as integer
 global CurrentNetState as integer 
+#constant chat_header_text=6000
+#constant co_ords_text=6001
+#constant speed_text=6002
+#constant red_creds=6003
+#constant blue_creds=6004
+#constant green_creds=6005
+#constant speed_title=6006
+
+//ENUMS
+#constant ALEFT=0
+#constant ACENTRE=1
+#constant ARIGHT=2

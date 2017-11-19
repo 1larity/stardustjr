@@ -13,7 +13,7 @@ global ShipMaxSpeed# as float= 2.0
 global minimapCounter as integer=5
 global isScanning as integer=0
 global scanStart# as float =0
-
+global scanCompletion as integer=0
 
 //simulate gameworld
 function doSim(gamestate REF as gamestate)
@@ -53,7 +53,9 @@ function update_world(gamestate REF as gamestate)
 	SetSpritePosition(minimap_player_ship,(GetScreenBoundsRight() - GetSpriteWidth( minimap))+(gamestate.playerShip.position.x/(gamestate.session.worldSize/20)),GetScreenBoundsTop()+gamestate.playerShip.position.y/(gamestate.session.worldSize/20))
 	SetSpriteAngle (minimap_player_ship, gamestate.playerShip.angle# +90)
 	SetSpriteFrame(player_ship,gamestate.playerShip.current_turning)
-
+	//update ui
+	SetTextString(co_ords_text,"pos x:"+left(str(gamestate.playerShip.position.x),5)+" y:"+left(str(gamestate.playerShip.position.y),5))
+	SetTextString(speed_text,left(str(gamestate.playership.velocity#),5)+"km/s") 
 endfunction		
 
 
@@ -67,43 +69,61 @@ endfunction
             
 function check_planet_scan(gamestate REF as gamestate)
 	index as integer
+	//for every planet
 	for index =0 to gamestate.planets.length
+		//is ship over planet?
 		if GetSpriteCollision(player_ship,index+50)
 			print("Scanning planet "+ gamestate.planets[index].name)
+			if isScanning=1
+				scanCompletion=scanCompletion+1
+				print("Scan "+ gamestate.planets[index].name+ " success "+str(scanCompletion))
+			endif
 		endif
-		newPosition as Vector2D
+			
+		//orbit planet around sun
+		orbit(index)
+	next index	
+endfunction
+function orbit(planetIndex)
+			newPosition as Vector2D
 		centre as Vector2D
 		centre.x=gamestate.session.worldsize/2
 		centre.y=gamestate.session.worldsize/2
 		radius as integer
-		radius=gamestate.planets[index].orbit
+		radius=gamestate.planets[planetIndex].orbit
 		
 		angle# as float
 		angle#=0
 		//get new theta 
-		gamestate.planets[index].angle# = gamestate.planets[index].angle# + gamestate.planets[index].angularVelocity#
+		gamestate.planets[planetIndex].angle# = gamestate.planets[planetIndex].angle# + gamestate.planets[planetIndex].angularVelocity#
 		//reset any planet over one orbit to start position
-		if gamestate.planets[index].angle# >360
-			gamestate.planets[index].angle#=360-gamestate.planets[index].angle#
+		if gamestate.planets[planetIndex].angle# >360
+			gamestate.planets[planetIndex].angle#=360-gamestate.planets[planetIndex].angle#
 		endif
-		newPosition=  nextArcStep(centre,radius , gamestate.planets[index].angle#)
-		gamestate.planets[index].position=newPosition
-		SetSpritePositionByOffset(index+50,gamestate.planets[index].position.x,gamestate.planets[index].position.y)
-	next index	
+		newPosition=  nextArcStep(centre,radius , gamestate.planets[planetIndex].angle#)
+		gamestate.planets[planetIndex].position=newPosition
+		SetSpritePositionByOffset(planetIndex+50,gamestate.planets[planetIndex].position.x,gamestate.planets[planetIndex].position.y)
 endfunction
-
 function doScan( gamestate REF as gamestate)
 	if scanStart# <>0
 		if (Timer() > scanStart#+3)
 			scanStart#=0
 			isScanning=0
 			//check scan was succesful and reaveal number
-			discoverNumber(gamestate.playerShip.position)
+			if scanCompletion>75
+				discoverNumber(gamestate.playerShip.position)
+				//add to player score here
+				
+			endif
+			//scan is complete, reset sucess counter
+			scanCompletion=0
 			SetSpriteVisible ( scan_wave, 0 )
 		else
 			scanScale# as float
 			scanScale#=(Timer()-scanStart#)/10
 			print("scanning")
+			//if we are scanning and over a planet add to scan completion
+			
 			SetSpriteVisible ( scan_wave, 1 )
 			if (Timer()	< scanStart#+1.5)
 				SetSpriteScale( scan_wave, scanScale#,scanScale#)
@@ -212,7 +232,6 @@ function doNetStuff()
         Print("Press N Key To Connect")
     endif
 
-
 /****************************************************************/
 /*                  SHIP INPUTS & PHYSICS						*/
 /****************************************************************/
@@ -223,8 +242,8 @@ function doNetStuff()
 	
 	// Inertia
 	if GetRawKeyState(87)=0 and GetRawKeyState(83)=0 and GetVirtualJoystickY( 1 )=0 and GetJoystickY()=0
-		if gamestate.playerShip.velocity#>0 then gamestate.playerShip.velocity#=gamestate.playerShip.velocity#-(0.01* Tween#)
-		if gamestate.playerShip.velocity#<0 then gamestate.playerShip.velocity#=gamestate.playerShip.velocity#+(0.01* Tween#)
+		if gamestate.playerShip.velocity#>0 then gamestate.playerShip.velocity#=gamestate.playerShip.velocity#-(0.001* Tween#)
+		if gamestate.playerShip.velocity#<0 then gamestate.playerShip.velocity#=gamestate.playerShip.velocity#+(0.001* Tween#)
 		if gamestate.playerShip.velocity#>-0.04 and gamestate.playerShip.velocity#<0.04 then gamestate.playerShip.velocity#=0
 	endif
 
@@ -235,7 +254,7 @@ function doNetStuff()
 	else
 		gamestate.playerShip.turnspeed#=12/2
 	endif
-	print("ClientShipSpeed " +str(gamestate.playerShip.velocity#))
+	//print("ClientShipSpeed " +str(gamestate.playerShip.velocity#))
 	// Send Movements only when Speed != 0 // Calculate the velocity vectors along X,Y with car rotation (shipAngle variable)
 	if gamestate.playerShip.velocity#<>0 
 	
@@ -359,7 +378,11 @@ function detectKeys()
 		channelNumber$ as string
 		channelNumber$ = TextInput("Channel_number?",GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
 		SetNetworkLocalInteger( gamestate.session.networkId, "SERVER_CHANNEL", val(channelNumber$)) 
-	endif  
+	endif
+	//if enter pressed start scan
+	if GetRawKeyReleased(13)
+		startScan(gamestate)
+	endif
 	// if "N" Network connect switch  
 	if GetRawKeyReleased(78) 
 		    

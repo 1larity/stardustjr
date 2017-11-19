@@ -72,4 +72,7 @@ type session
 	//the physical size of the gamemap
 	worldSize as integer
 	bgStars as integer
+	redCredits as integer
+	greenCredits as integer
+	blueCredits as integer
 endtype

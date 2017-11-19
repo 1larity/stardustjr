@@ -31,7 +31,8 @@ mapSize# = 100// devMin# / 20.0
 	for index =0 to gamestate.planets.length
 		SetSpriteScale(index+50,gamestate.planets[index].size#*rescale,gamestate.planets[index].size#*rescale)
 		SetSpritePositionByOffset(index+50,gamestate.planets[index].position.x,gamestate.planets[index].position.y)
-		//SetSpritePositionByOffset(2,rescale,rescale)
+		SetSpriteColor(index+50,255,255,255,255)
+		
 	next index
 	//if a minimap already exists
 	if GetSpriteExists(minimap)
@@ -51,7 +52,7 @@ mapSize# = 100// devMin# / 20.0
 	for index =0 to gamestate.planets.length
 		SetSpriteScale(index+50,gamestate.planets[index].size#,gamestate.planets[index].size#)
 		SetSpritePositionByOffset(index+50,gamestate.planets[index].position.x,gamestate.planets[index].position.y)
-	//	SetSpritePositionByOffset(2,rescale,rescale)
+		SetSpriteShape(index+50, 1)
 	next index
 	SetDisplayAspect(1.0)
 	//create map sprite from image
@@ -80,6 +81,9 @@ endfunction
 
 //hide unwanted objects that we don't want showing in the minimap
 function hide_unwanted()
+	if isScanning=1
+		SetSpriteVisible ( scan_wave, 0 )
+	endif
 	//hide player ship
 	SetSpriteVisible(player_ship,0)
 	//hide chat frame
@@ -121,6 +125,10 @@ ClearScreen()
 endfunction
 //show objects that were hidden for minimap render
 function unhide_wanted()
+	//show scanwave
+	if isScanning=1
+		SetSpriteVisible ( scan_wave, 1 )
+	endif
 	//show player ship
 	SetSpriteVisible(player_ship,1)
 	//show minimap

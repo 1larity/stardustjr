@@ -105,7 +105,6 @@ endfunction
 /* When the local client has moved (After Prediction and Server Reconciliation) */ 
 /********************************************************************************/
 function NGP_onLocalPlayerMoveUpdate(iNetID, UpdatedMove as NGP_Slot)
-	Print("server co-ord "+ str(UpdatedMove.Slot[POS_X]) +" "+str(UpdatedMove.Slot[POS_Y]))
 	gamestate.playership.position.x= UpdatedMove.Slot[POS_X] 
 	gamestate.playership.position.y= UpdatedMove.Slot[POS_Y] 
 	SetSpritePositionByOffset(player_ship,UpdatedMove.Slot[POS_X] ,UpdatedMove.Slot[POS_Y])
