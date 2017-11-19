@@ -21,10 +21,12 @@ function populate_planets()
 		//set planet orbit radius
 		gamestate.planets[index].position.x=position_planet(index) 
 		gamestate.planets[index].position.y=gamestate.session.worldSize/2
+		gamestate.planets[index].orbit=gamestate.planets[index].position.x
+		
 		//set planet orbit speed
-		gamestate.planets[index].angularVelocity#=Random(1,100)/100
+		gamestate.planets[index].angularVelocity#=Random(1,100)/999.99
 		//set planet starting angle along orbit
-		gamestate.planets[index].angle#=0
+		gamestate.planets[index].angle#=Random (1,360)
 		//set planet appearence
 		gamestate.planets[index].planet_type=Random(1,2)
 		//set planet size

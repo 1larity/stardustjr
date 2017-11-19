@@ -85,13 +85,13 @@ endfunction
 function load_sun(gamestate REF as gamestate)
 	
 	//create sun sprite
-	LoadImage ( 2, "sun.png" )
-	CreateSprite(2,2)
-	SetSpriteDepth(2,50)
-	SetSpriteScale(2,0.5,0.5)
-	SetSpritePositionByOffset(2,gamestate.session.worldSize/2,gamestate.session.worldSize/2)
+	LoadImage ( sun, "sun.png" )
+	CreateSprite(sun,2)
+	SetSpriteDepth(sun,50)
+	SetSpriteScale(sun,0.5,0.5)
+	SetSpritePositionByOffset(sun,gamestate.session.worldSize/2,gamestate.session.worldSize/2)
 	//set collision on sun to circle
-	SetSpriteShape(2, 1)
+	SetSpriteShape(sun, 1)
 	//create planet sprites
 	LoadImage ( 3, "planet02.png" )
 	LoadImage ( 4, "planet01.png" )
@@ -152,16 +152,17 @@ function randomStars()
 		//SetSpriteColor(index+500,gamestate.starfield[index].r,gamestate.starfield[index].g,gamestate.starfield[index].b,255)
 		//randomly position stars
 		SetSpritePositionByOffset(500+index, Random(1,gamestate.session.worldSize),Random(1,gamestate.session.worldSize))
-		
 	next
+	//set number of background stars set up (for hiding later in minimap)
+	gamestate.session.bgStars=1000
 endfunction
 function starGrid()
 	starscale# as float=0.05
 	index as integer
 	xindex as integer
 	yindex as integer
-	for xindex=0 to gamestate.session.worldSize step 10
-		for yindex= 0 to gamestate.session.worldSize step 10
+	for xindex=0 to gamestate.session.worldSize step 20
+		for yindex= 0 to gamestate.session.worldSize step 20
 			CreateSprite(index+500,50)
 		SetSpriteDepth(index+500,51)
 		SetSpriteScale(index+500,starscale#,starscale#)
@@ -171,4 +172,6 @@ function starGrid()
 		index =index+1
 	next yindex
 	next xindex
+		//set number of background stars set up (for hiding later in minimap)
+	gamestate.session.bgStars=index-1
 endfunction

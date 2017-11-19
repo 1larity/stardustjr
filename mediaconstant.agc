@@ -8,6 +8,7 @@
 #constant stationPart01=10
 #constant stationPart02=11
 #constant planet01=20
+#constant sun=2
 //sounds
 #constant scan_sound=1
 #constant scan_success=2

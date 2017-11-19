@@ -148,10 +148,10 @@ FixEditBoxToScreen(tmpEditBox,1)
 SetEditBoxPosition(tmpEditBox,left#,bottom#)
 SetEditBoxSize( tmpEditBox, (GetScreenBoundsRight()-20)/2,height )
 //apply colours & style
-SetEditBoxBackgroundColor(tmpEditBox, 255, 255, 255, 100)
+SetEditBoxBackgroundColor(tmpEditBox, 100, 100, 100, 50)
 SetEditBoxTextColor(tmpEditBox,0,0,0)
 SetEditBoxBorderSize( tmpEditBox, 0.1 ) 
-SetEditBoxBorderColor( tmpEditBox, 100, 100,255, 200 ) 
+SetEditBoxBorderColor( tmpEditBox, 100, 100,255, 50 ) 
 //SetEditBoxVisible(incoming_chat_text,1)
 ReturnValue=tmpEditBox
 endfunction ReturnValue

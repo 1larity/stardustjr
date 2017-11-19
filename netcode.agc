@@ -129,8 +129,8 @@ function NGP_onNetworkPlayerMoveUpdate(iNetID, ClientID as integer, UpdatedMove 
 		SetSpriteAngle(SpriteID,UpdatedMove.Slot[ANG_Y]+90)
 		
 		SetTextPosition(LabelID,UpdatedMove.Slot[POS_X] ,UpdatedMove.Slot[POS_Y]-10)
-			SetTextSize(LabelID,5)
-	SetTextFont(LabelID,main_font)
+		SetTextSize(LabelID,5)
+		SetTextFont(LabelID,main_font)
 		if ClientID = gamestate.session.myClientId   
 			 
 			 // Hide Ghost Sprite and TextLabel
@@ -174,7 +174,7 @@ function NGP_onNetworkPlayerConnect(iNetID, ClientID)
 			SetSpriteAnimation(newSprite,500,300,5)
 			SetSpriteDepth(newSprite,1)
 			SetSpriteOffset( newSprite, GetSpriteWidth(newSprite)/2, GetSpriteHeight(newSprite)/2 ) 
-			SetSpriteScale(newSprite,0.04,0.04) 
+			SetSpriteScale(newSprite,0.02,0.02) 
 
 		// Affect the sprite ID to the ClientID at UserData Slot 1
 		SetNetworkClientUserData(iNetID, ClientID, 1, newSprite)

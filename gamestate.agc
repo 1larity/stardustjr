@@ -23,6 +23,7 @@ type planet
 	g as integer
 	b as integer
 	angle# as float
+	orbit as integer
 endtype
 
 type station
@@ -70,4 +71,5 @@ type session
 	networkID as integer //
 	//the physical size of the gamemap
 	worldSize as integer
+	bgStars as integer
 endtype

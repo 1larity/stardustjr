@@ -35,13 +35,15 @@ setupNetSession()
 
 //setup planets
 populate_planets()
+
 //load and setup sound and graphics
 load_assets(gamestate)
+
 //drwa UI
 setup_interface()
 create_minimap()
 gamestate.playerShip.acceleration#=.05
-gamestate.playerShip.max_velocity#=2.5
+gamestate.playerShip.max_velocity#=1
 
 distance_to_sun# as float
 do	
@@ -58,11 +60,12 @@ do
 	doSim(gamestate)
 	
 
-    Print( ScreenFPS() )
+  
 
 	//print("ship heading " + str(gamestate.playerShip.heading.x) +"   "+ str(gamestate.playerShip.heading.x))
 	//Print debug
 	if debug=1
+		  Print( ScreenFPS() )
 		print("ship pos " + str(gamestate.playerShip.position.x)+" "+str(gamestate.playerShip.position.y))
 		print(GetWritePath())
 		print (GetScreenBoundsTop()) 

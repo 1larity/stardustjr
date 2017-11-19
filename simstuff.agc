@@ -9,7 +9,7 @@ global displayGhost as integer
 global Tween#
 global OwnSpriteColorChosen as integer
 global UseBoost as integer
-global ShipMaxSpeed# as float= 4.0
+global ShipMaxSpeed# as float= 2.0
 global minimapCounter as integer=5
 global isScanning as integer=0
 global scanStart# as float =0
@@ -36,8 +36,9 @@ function doSim(gamestate REF as gamestate)
 	doScan(gamestate)
 	update_world(gamestate)
 	//once every 100 iterations update minimap
-	if minimapCounter=5
+	if minimapCounter=10
 		create_minimap()
+		positionMiniMap()
 		minimapCounter=1
 	endif
 	minimapCounter=minimapcounter+1
@@ -46,23 +47,20 @@ endfunction
 function update_world(gamestate REF as gamestate)
 	check_refuel()
 	check_planet_scan(gamestate)
-	positionMiniMap()
 	positionButtons()
 	positionChat()
-	//move_ship(gamestate.playerShip)
+
 	SetSpritePosition(minimap_player_ship,(GetScreenBoundsRight() - GetSpriteWidth( minimap))+(gamestate.playerShip.position.x/(gamestate.session.worldSize/20)),GetScreenBoundsTop()+gamestate.playerShip.position.y/(gamestate.session.worldSize/20))
 	SetSpriteAngle (minimap_player_ship, gamestate.playerShip.angle# +90)
-	//SetSpritePositionByOffset  ( player_ship, gamestate.playerShip.position.x, gamestate.playerShip.position.y )
-	//setViewOffset( gamestate.playerShip.position.x - getVirtualWidth() / 2.0 ,gamestate.playerShip.position.y - getVirtualHeight() / 2.0  )
 	SetSpriteFrame(player_ship,gamestate.playerShip.current_turning)
-	//SetSpriteAngle (player_ship, gamestate.playerShip.angle# )
+
 endfunction		
 
 
 //can the ship refuel (colliding with sun sprite)
 function check_refuel()
 	
-	if GetSpriteCollision(player_ship,2)
+	if GetSpriteCollision(player_ship,sun)
 		print("refueling")
 	endif
 endfunction
@@ -77,15 +75,20 @@ function check_planet_scan(gamestate REF as gamestate)
 		centre as Vector2D
 		centre.x=gamestate.session.worldsize/2
 		centre.y=gamestate.session.worldsize/2
+		radius as integer
+		radius=gamestate.planets[index].orbit
+		
+		angle# as float
+		angle#=0
 		//get new theta 
-		gamestate.planets[index].angle#=gamestate.planets[index].angle#+gamestate.planets[index].angularVelocity#
+		gamestate.planets[index].angle# = gamestate.planets[index].angle# + gamestate.planets[index].angularVelocity#
 		//reset any planet over one orbit to start position
-		if gamestate.planets[index].angle#>360
-			gamestate.planets[index].angle# =gamestate.planets[index].angle#-360
+		if gamestate.planets[index].angle# >360
+			gamestate.planets[index].angle#=360-gamestate.planets[index].angle#
 		endif
-		newPosition=nextArcStep(centre, gamestate.planets[index].position, gamestate.planets[index].angle#)
+		newPosition=  nextArcStep(centre,radius , gamestate.planets[index].angle#)
 		gamestate.planets[index].position=newPosition
-			SetSpritePositionByOffset(index+50,gamestate.planets[index].position.x,gamestate.planets[index].position.y)
+		SetSpritePositionByOffset(index+50,gamestate.planets[index].position.x,gamestate.planets[index].position.y)
 	next index	
 endfunction
 
@@ -215,14 +218,14 @@ function doNetStuff()
 /****************************************************************/
 
 
-	if gamestate.playerShip.velocity#>ShipMaxSpeed# then gamestate.playerShip.velocity#=ShipMaxSpeed#
-	if gamestate.playerShip.velocity#<-ShipMaxSpeed# then gamestate.playerShip.velocity#=-ShipMaxSpeed#
+	if gamestate.playerShip.velocity#>gamestate.playerShip.max_velocity# then gamestate.playerShip.velocity#=gamestate.playerShip.max_velocity#
+	if gamestate.playerShip.velocity#<-gamestate.playerShip.max_velocity# then gamestate.playerShip.velocity#=-gamestate.playerShip.max_velocity#
 	
 	// Inertia
 	if GetRawKeyState(87)=0 and GetRawKeyState(83)=0 and GetVirtualJoystickY( 1 )=0 and GetJoystickY()=0
 		if gamestate.playerShip.velocity#>0 then gamestate.playerShip.velocity#=gamestate.playerShip.velocity#-(0.01* Tween#)
 		if gamestate.playerShip.velocity#<0 then gamestate.playerShip.velocity#=gamestate.playerShip.velocity#+(0.01* Tween#)
-		if gamestate.playerShip.velocity#>-0.02 and gamestate.playerShip.velocity#<0.020 then gamestate.playerShip.velocity#=0
+		if gamestate.playerShip.velocity#>-0.04 and gamestate.playerShip.velocity#<0.04 then gamestate.playerShip.velocity#=0
 	endif
 
 
