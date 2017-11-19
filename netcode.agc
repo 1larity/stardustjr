@@ -10,11 +10,13 @@ function setupNetSession()
 	//get player name
 	 //-20,GetScreenBoundsBottom()-20
 	nickname$ = TextInput("EnterName"+right(str(GetMilliseconds()),3),GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
-	gamestate.session.ServerHost$ = "192.168.0.11" // IP Of MikeMax Linux Box for testing :)
+	gamestate.session.ServerHost$ = "192.168.0.6" // IP Of MikeMax Linux Box for testing :)
 	gamestate.session.ServerPort =33333
 	gamestate.session.NetworkLatency = 25 // Should always be less than the NETGAMEPLUGIN_WORLDSTATE_INTERVAL defined in the server plugin
 	gamestate.session.clientName$=nickname$
-	networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$ , gamestate.session.NetworkLatency)
+	gamestate.session.networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$ ,gamestate.session.NetworkLatency)
+	gamestate.session.worldSize=2000
+CurrentNetState =1 
 endfunction
 /******************************************************/
 /* When local client has disconnected from the server */
@@ -31,7 +33,7 @@ function NGP_onNetworkJoined(iNetID, localClientID)
 	gamestate.session.myClientId=localClientID
 	OwnSpriteColorChosen=0
 	//createChatBox()
-	CreateLocalShipSprite() // Create local direct sprite for the local client 
+	//CreateLocalShipSprite() // Create local direct sprite for the local client 
 endfunction
 
 function destroyChatBox()
@@ -56,7 +58,7 @@ function NGP_onNetworkMessage(ServerCommand as integer,idMessage as integer)
 						NewChatMessage$ as String
 						SenderName$ as string
 						NewChatMessage$ = GetNetworkMessageString(idMessage)
-						SenderName$ = GetNetworkClientName(networkId, GetNetworkMessageFromClient(idMessage))
+						SenderName$ = GetNetworkClientName(gamestate.session.networkId, GetNetworkMessageFromClient(idMessage))
 						ChatMessages.insert( SenderName$+" : "+NewChatMessage$) // Add message to Messages array
 						if ChatMessages.length>100 then ChatMessages.remove(0) // Do some cleaning
 	endif

@@ -7,6 +7,7 @@
 #constant joystickImage=9
 #constant stationPart01=10
 #constant stationPart02=11
+#constant planet01=20
 //sounds
 #constant scan_sound=1
 #constant scan_success=2
@@ -19,6 +20,8 @@
 #constant save_button_text=2
 #constant load_button_text=3
 #constant mine_button_text=4
-#constant incoming_chat_text=5
-#constant chat_header_text=6
-#constant chat_edit_text=7
+//Editbox ID of main chatbox
+global incoming_chat_text as integer
+#constant chat_header_text=6000
+global chat_edit_text as integer
+global CurrentNetState as integer 

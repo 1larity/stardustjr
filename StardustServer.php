@@ -160,7 +160,7 @@ function onAGKClientJoin($iClientID) {
 	NGP_SetClientState($iClientID, POS_X, 500);
 	NGP_SetClientState($iClientID, POS_Y, 500);
 	//send current solar sytem data
-	//sendWorldState(iClientID);
+	//////sendWorldState(iClientID);
 	
 }
 function sendWorldstate($iClientID){

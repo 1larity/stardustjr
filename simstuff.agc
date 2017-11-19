@@ -10,13 +10,18 @@ global Tween#
 global OwnSpriteColorChosen as integer
 global UseBoost as integer
 global ShipMaxSpeed# as float= 4.0
-global networkId
+global minimapCounter as integer=5
 global isScanning as integer=0
 global scanStart# as float =0
 
 
 //simulate gameworld
 function doSim(gamestate REF as gamestate)
+	
+	if IsNetworkActive(gamestate.session.networkId)
+		doNetStuff()
+	endif
+	
 /************************************************************************/
 /*                    NETWORK UPDATE CALL								*/
 /*                    -------------------								*/
@@ -24,14 +29,18 @@ function doSim(gamestate REF as gamestate)
 /************************************************************************/
 	
 
-	NGP_UpdateNetwork(networkId) 
+	NGP_UpdateNetwork(gamestate.session.networkId) 
+
 	//assume ship is not turning
 	gamestate.playerShip.current_turning=3
 	doScan(gamestate)
 	update_world(gamestate)
-		if IsNetworkActive(networkId)
-		doNetStuff()
+	//once every 100 iterations update minimap
+	if minimapCounter=5
+		create_minimap()
+		minimapCounter=1
 	endif
+	minimapCounter=minimapcounter+1
 endfunction
 
 function update_world(gamestate REF as gamestate)
@@ -41,7 +50,7 @@ function update_world(gamestate REF as gamestate)
 	positionButtons()
 	positionChat()
 	//move_ship(gamestate.playerShip)
-	SetSpritePosition(minimap_player_ship,(GetScreenBoundsRight() - GetSpriteWidth( minimap))+(gamestate.playerShip.position.x/50),GetScreenBoundsTop()+gamestate.playerShip.position.y/50)
+	SetSpritePosition(minimap_player_ship,(GetScreenBoundsRight() - GetSpriteWidth( minimap))+(gamestate.playerShip.position.x/(gamestate.session.worldSize/20)),GetScreenBoundsTop()+gamestate.playerShip.position.y/(gamestate.session.worldSize/20))
 	SetSpriteAngle (minimap_player_ship, gamestate.playerShip.angle# +90)
 	//SetSpritePositionByOffset  ( player_ship, gamestate.playerShip.position.x, gamestate.playerShip.position.y )
 	//setViewOffset( gamestate.playerShip.position.x - getVirtualWidth() / 2.0 ,gamestate.playerShip.position.y - getVirtualHeight() / 2.0  )
@@ -49,6 +58,8 @@ function update_world(gamestate REF as gamestate)
 	//SetSpriteAngle (player_ship, gamestate.playerShip.angle# )
 endfunction		
 
+
+//can the ship refuel (colliding with sun sprite)
 function check_refuel()
 	
 	if GetSpriteCollision(player_ship,2)
@@ -62,6 +73,19 @@ function check_planet_scan(gamestate REF as gamestate)
 		if GetSpriteCollision(player_ship,index+50)
 			print("Scanning planet "+ gamestate.planets[index].name)
 		endif
+		newPosition as Vector2D
+		centre as Vector2D
+		centre.x=gamestate.session.worldsize/2
+		centre.y=gamestate.session.worldsize/2
+		//get new theta 
+		gamestate.planets[index].angle#=gamestate.planets[index].angle#+gamestate.planets[index].angularVelocity#
+		//reset any planet over one orbit to start position
+		if gamestate.planets[index].angle#>360
+			gamestate.planets[index].angle# =gamestate.planets[index].angle#-360
+		endif
+		newPosition=nextArcStep(centre, gamestate.planets[index].position, gamestate.planets[index].angle#)
+		gamestate.planets[index].position=newPosition
+			SetSpritePositionByOffset(index+50,gamestate.planets[index].position.x,gamestate.planets[index].position.y)
 	next index	
 endfunction
 
@@ -109,12 +133,12 @@ function doNetStuff()
 	FPS#=1/GetFrameTime()
 	Tween#=60/FPS# // Movements Speed set at 60fps => it's now the reference for Tween Factor.
 	//print(str(Tween#))
-        if IsNetworkActive(networkId)
+        if IsNetworkActive(gamestate.session.networkId)
         // if we have not set our ship colour, pick one now
             if not OwnSpriteColorChosen
-				SetNetworkLocalInteger(networkId,"colorR",random(50,200))
-				SetNetworkLocalInteger(networkId,"colorG",random(50,200))
-				SetNetworkLocalInteger(networkId,"colorB",random(50,200))
+				SetNetworkLocalInteger(gamestate.session.networkId,"colorR",random(50,200))
+				SetNetworkLocalInteger(gamestate.session.networkId,"colorG",random(50,200))
+				SetNetworkLocalInteger(gamestate.session.networkId,"colorB",random(50,200))
 				OwnSpriteColorChosen = 1
 			endif
             // print the network details and the details of this client
@@ -122,25 +146,25 @@ function doNetStuff()
             Print("Keys:  'G' - Switch Ghost display / 'M' - Chat Message / WSAD to steer / 'SPACE' : BOOST ")
             Print("Keys:  'C' - Change Channel / N - Open/Close Network / '+' - increase net latency / '-' - decrease net latency")
             Print("WorldStep: "+ str(WORLD_STEP_MS)+"ms"+" / Local Network Latency: "+str(gamestate.session.NetworkLatency)+"ms")
-            print("Actual Members in Channel " + str(GetNetworkClientInteger( networkId, gamestate.session.myClientId, "SERVER_CHANNEL" ))+" :")
+            print("Actual Members in Channel " + str(GetNetworkClientInteger( gamestate.session.networkId, gamestate.session.myClientId, "SERVER_CHANNEL" ))+" :")
 			//Print("Clients in Channel : " + Str(clientNum))
             
             //Print("Server Id: " + Str(GetNetworkServerId(networkId)))
             //Print("Client Id: " + Str(myClientId))
             //Print("Client Name: " + GetNetworkClientName(networkId, myClientId))
 			id as integer
-            id = GetNetworkFirstClient( networkId )
+            id = GetNetworkFirstClient( gamestate.session.networkId )
             while id<>0 
 					//NGP_NotifyClientConnect(id)
 					// Handle Connected client
 					you$ as string
 					 if id = gamestate.session.myClientId then you$="(You)" else you$="" 
 					
-					print( "- Client ID " + str(id) + " > "+GetNetworkClientName( networkId, id )+" "+you$)
+					print( "- Client ID " + str(id) + " > "+GetNetworkClientName( gamestate.session.networkId, id )+" "+you$)
 						
 					// ignore server ID for display (In Real Life, You should also ignore LocalPlayer => id = myClientId but we want the Server Ghost)
 					if id = 1 // or id = myClientId 
-						id = GetNetworkNextClient( networkId )
+						id = GetNetworkNextClient( gamestate.session.networkId )
 						continue
 					endif
 					
@@ -149,10 +173,10 @@ function doNetStuff()
 					colorR as integer
 					colorG as integer
 					colorB as integer
-						SpriteToColorize = GetNetworkClientUserData( networkId, id, 1)
-						colorR=GetNetworkClientInteger(networkId,id,"colorR")
-						colorG=GetNetworkClientInteger(networkId,id,"colorG")
-						colorB=GetNetworkClientInteger(networkId,id,"colorB")
+						SpriteToColorize = GetNetworkClientUserData( gamestate.session.networkId, id, 1)
+						colorR=GetNetworkClientInteger(gamestate.session.networkId,id,"colorR")
+						colorG=GetNetworkClientInteger(gamestate.session.networkId,id,"colorG")
+						colorB=GetNetworkClientInteger(gamestate.session.networkId,id,"colorB")
 						AlphaSprite as integer
 						if id=gamestate.session.myClientId 
 							AlphaSprite=150 // This for the ghost !
@@ -167,7 +191,7 @@ function doNetStuff()
 					endif
 					
 				
-			id = GetNetworkNextClient( networkId )
+			id = GetNetworkNextClient( gamestate.session.networkId )
 			endwhile
             
         else
@@ -212,8 +236,8 @@ function doNetStuff()
 	// Send Movements only when Speed != 0 // Calculate the velocity vectors along X,Y with car rotation (shipAngle variable)
 	if gamestate.playerShip.velocity#<>0 
 	
-		NGP_SendMovement(networkId, POS_X, 1, (cos(gamestate.playerShip.Angle#)* Tween#)*gamestate.playerShip.velocity#*UseBoost)
-		NGP_SendMovement(networkId, POS_Y, 1, (sin(gamestate.playerShip.Angle#)* Tween#)*gamestate.playerShip.velocity#*UseBoost)	
+		NGP_SendMovement(gamestate.session.networkId, POS_X, 1, (cos(gamestate.playerShip.Angle#)* Tween#)*gamestate.playerShip.velocity#*UseBoost)
+		NGP_SendMovement(gamestate.session.networkId, POS_Y, 1, (sin(gamestate.playerShip.Angle#)* Tween#)*gamestate.playerShip.velocity#*UseBoost)	
 		UseBoost=1	
 	endif
 
@@ -230,13 +254,13 @@ function doNetStuff()
 			if GetRawKeyState(65) or GetVirtualJoystickX( 1 )<0 or GetJoystickX()<0 // LEFT
 				print("left!")
 				gamestate.playerShip.Angle#=gamestate.playerShip.Angle#-2.0*gamestate.playerShip.turnspeed#
-				NGP_SendMovement(networkId, ANG_Y, -1,2.0*gamestate.playerShip.turnspeed#)
+				NGP_SendMovement(gamestate.session.networkId, ANG_Y, -1,2.0*gamestate.playerShip.turnspeed#)
 			endif
 			//if "D" or Joystick right is pressed, turn right
 			if GetRawKeyState(68) or GetVirtualJoystickX( 1 )>0 or GetJoystickX()>0 // RIGHT
 				print("right!")
 				gamestate.playerShip.Angle#=gamestate.playerShip.Angle#+2.0*gamestate.playerShip.turnspeed#
-				NGP_SendMovement(networkId, ANG_Y, 1,2.0*gamestate.playerShip.turnspeed#)
+				NGP_SendMovement(gamestate.session.networkId, ANG_Y, 1,2.0*gamestate.playerShip.turnspeed#)
 			endif
 			//if "S" or Joystick down is pressed, slow down
 			if GetRawKeyState(83) or GetVirtualJoystickY( 1 )>0 or GetJoystickY()>0 // BREAKs / Reverse
@@ -261,13 +285,13 @@ function doNetStuff()
 		//We lost Focus, consider message validation with ENTER
 		if len(TrimString(GetEditBoxText(chat_edit_text)," "))>0
 				// Add message to local queue
-				ChatMessages.insert(GetNetworkClientName(networkId, gamestate.session.myClientId)+" : "+GetEditBoxText(chat_edit_text))
+				ChatMessages.insert(GetNetworkClientName(gamestate.session.networkId, gamestate.session.myClientId)+" : "+GetEditBoxText(chat_edit_text))
 				////// Send Message //////
 				newMsg as integer
 				newMsg=CreateNetworkMessage()
 				AddNetworkMessageInteger(newMsg,6800) // Arbitrary server command for Chat Messages
 				AddNetworkMessageString(newMsg,GetEditBoxText(chat_edit_text))
-				SendNetworkMessage(networkId,0,newMsg) // Send to all clients
+				SendNetworkMessage(gamestate.session.networkId,0,newMsg) // Send to all clients
 		
 		endif
 		SetEditBoxText(chat_edit_text,"")
@@ -290,9 +314,9 @@ function doNetStuff()
     ChatBox$=""
     i as integer
     for i=ChatMessages.length-offset to ChatMessages.length
-		ChatBox$ = ChatBox$ + chr(10) + ChatMessages[i]
+		ChatBox$ = ChatBox$ +  ChatMessages[i]+chr(10)
 	next i
-	SetTextString(incoming_chat_text,ChatBox$)
+	SetEditBoxText(incoming_chat_text,ChatBox$)
 endfunction
 /****************************************************************/
 /*                 KEYBOARD INPUTS  							*/
@@ -300,14 +324,15 @@ endfunction
 function detectKeys()
 	// if Escape, Quit
  	if GetRawKeyReleased(27) 
-		if IsNetworkActive(networkId)
-			NGP_CloseNetwork(networkId)
+		if IsNetworkActive(gamestate.session.networkId)
+			NGP_CloseNetwork(gamestate.session.networkId)
 		endif
 		end
 	endif
 	 // if "M" Send new message
 	if GetRawKeyReleased(77) or ( GetPointerState() and  GetPointerX()>360 and GetPointerX()<916 and GetPointerY()>290 and GetPointerY()<505 )
 		//make chatbo visible
+		SetEditBoxVisible(incoming_chat_text,1)
 		SetTextVisible(chat_header_text,1)
 		SetEditBoxVisible(chat_edit_text,1)
 		SetEditBoxFocus(chat_edit_text,1)
@@ -315,12 +340,12 @@ function detectKeys()
 	// if "+" pressed increase latency
 	if GetRawKeyState(187) 
 		gamestate.session.NetworkLatency = gamestate.session.NetworkLatency+1
-		SetNetworkLatency(networkId,gamestate.session.NetworkLatency)
+		SetNetworkLatency(gamestate.session.networkId,gamestate.session.NetworkLatency)
 	endif
 	// if "-" pressed decrease latency
 	if GetRawKeyState(189)
 		gamestate.session.NetworkLatency = gamestate.session.NetworkLatency-1
-		SetNetworkLatency(networkId,gamestate.session.NetworkLatency)
+		SetNetworkLatency(gamestate.session.networkId,gamestate.session.NetworkLatency)
 	endif
 	// if "G" pressed toggle Ghost Mode
 	if GetRawKeyReleased(71) 
@@ -328,18 +353,21 @@ function detectKeys()
 	endif
 	// if "C"  Change Channel
 	if GetRawKeyReleased(67) 
-		SetNetworkLocalInteger( networkId, "SERVER_CHANNEL", val(TextInput("Channel_number?",100,100)) )
+		channelNumber$ as string
+		channelNumber$ = TextInput("Channel_number?",GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
+		SetNetworkLocalInteger( gamestate.session.networkId, "SERVER_CHANNEL", val(channelNumber$)) 
 	endif  
 	// if "N" Network connect switch  
 	if GetRawKeyReleased(78) 
-		CurrentNetState as integer     
+		    
 		CurrentNetState=NGP_GetNetworkState()
 		if CurrentNetState = 1 // if connected
 			// disconnect from the network
-			NGP_CloseNetwork(networkId)
+			NGP_CloseNetwork(gamestate.session.networkId)
 		elseif CurrentNetState < 0 // if NOT connected
 			// join the network
-		networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$, gamestate.session.NetworkLatency)
+		gamestate.session.networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$, gamestate.session.NetworkLatency)
+		
 		endif
 	endif
 endfunction

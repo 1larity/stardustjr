@@ -5,8 +5,8 @@
 type gamestate
     playerShip as ship
     session as session
-	planets as planet[20]
-	stations as station[10]
+	planets as planet[13]
+	stations as station[2]
 	settings as settings
 endtype
 
@@ -14,9 +14,15 @@ type planet
 	planetID as integer
 	name as string
 	position as Vector2D
+	angularVelocity# as float
 	resources as resource[5]
 	planet_type as integer
 	size# as float
+	//planet colour
+	r as integer
+	g as integer
+	b as integer
+	angle# as float
 endtype
 
 type station
@@ -61,4 +67,7 @@ type session
 	ServerPort as integer	//server port
 	NetworkLatency as integer//network latency
 	myClientId as integer
+	networkID as integer //
+	//the physical size of the gamemap
+	worldSize as integer
 endtype

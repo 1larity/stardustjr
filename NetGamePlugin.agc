@@ -240,7 +240,7 @@ function NGP_UpdateNetwork(iNetID as integer)
 				NGP_NetworkState = -2 // indicate that the connection failed
 				// close the network so that we are free to attempt another connection
 				// CloseNetwork(networkId)
-				NGP_CloseNetwork(networkId)
+				NGP_CloseNetwork(iNetID)
 			endif
 	elseif NGP_NetworkState = -1
 			//NGP_NotifyClientDisconnect(myClientId)

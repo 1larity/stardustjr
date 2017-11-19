@@ -1,7 +1,7 @@
 //setup scan button 
 
 function setup_interface()
-	createChatBox()
+	createChatBox(30,95)
 	//add the joysticks to the screen
 set_virtual_joystick() 
 set_scan_button()
@@ -96,32 +96,20 @@ function set_mine_button()
 	SetTextPosition(mine_button_text,button_x,button_y-(buttonSizeX/2)+((text_size/2)))
 endfunction
 // setup chatbox for the first time
-function createChatBox()
-// Display the ChatBox with incoming messages
- CreateText(incoming_chat_text,"Welcome to the Chat !")
-SetTextMaxWidth( incoming_chat_text, 50.0 )
-//SetTextScissor
-FixTextToScreen(incoming_chat_text,1)
-SetTextPosition(incoming_chat_text,30,70)
-SetTextSize(incoming_chat_text,5)
-//SetTextColor(ChatBoxMessage,0,0,0,255)
+function createChatBox(chatPosLeft as float, chatPosBottom as float)
 
-// Display the Header Chat Input textbox
+incoming_chat_text=createSDtxbox("Welcome to chat.",GetScreenBoundsLeft()+20,74,20)
+// Display the Chat title
 CreateText(chat_header_text,"Chat : ")
 FixTextToScreen(chat_header_text,1)
-SetTextPosition(chat_header_text,30,65)
-SetTextSize(chat_header_text,5)
+SetTextPosition(chat_header_text,GetScreenBoundsLeft()+20,70)
+SetTextSize(chat_header_text,3)
+SetTextFont(chat_header_text, main_font)
 //SetTextColor(LabelMessage,255,255,255,255)
 SetTextVisible(chat_header_text,1)
-
-CreateEditBox(chat_edit_text)
-SetEditBoxSize(chat_edit_text,50,5)
-SetEditBoxTextSize( chat_edit_text, 5 )
-FixEditBoxToScreen(chat_edit_text,1)
-SetEditBoxPosition(chat_edit_text,30,95.0)
-SetEditBoxFocus(chat_edit_text,0)
-SetEditBoxVisible(chat_edit_text,1)
+chat_edit_text=createSDtxbox("Type chat here.",GetScreenBoundsLeft()+20,97,3)
 ChatEditFocus = 0
+sync()
 endfunction
 
 //reposition buttons to lower left of screen
@@ -137,13 +125,33 @@ function positionButtons()
 endfunction
 //reposition chat on resize
 function positionChat()
-	SetTextPosition(incoming_chat_text,GetScreenBoundsLeft()+25,70)
-	SetTextPosition(chat_header_text,GetScreenBoundsLeft()+25,65)
-	SetEditBoxPosition(chat_edit_text,GetScreenBoundsLeft()+25,95.0)
-	SetEditBoxSize(chat_edit_text,(GetScreenBoundsRight()-20)/1.25,5)
-	SetTextMaxWidth( incoming_chat_text, (GetScreenBoundsRight()-20)/1.25 )
-	SetVirtualButtonPosition(1,GetScreenBoundsLeft()+10,80)
-	SetVirtualButtonPosition(2,GetScreenBoundsLeft()+10,87)
-	SetVirtualButtonPosition(3,GetScreenBoundsLeft()+10,94)
-	SetVirtualButtonPosition(4,GetScreenBoundsLeft()+10,73)
+	SetEditBoxPosition(incoming_chat_text,GetScreenBoundsLeft()+20,74)
+	SetEditBoxSize(incoming_chat_text,(GetScreenBoundsRight()-40),20)
+	SetTextPosition(chat_header_text,GetScreenBoundsLeft()+20,70)
+	SetEditBoxPosition(chat_edit_text,GetScreenBoundsLeft()+20,95.0)
+	SetEditBoxSize(chat_edit_text,GetScreenBoundsRight()-40,5)	
 endfunction
+
+//creates text boxes with fixed style
+function createSDtxbox(default$ as string,left# as float, bottom# as float, height as integer)
+	ReturnValue as integer
+	tmpEditBox as integer
+	tmpEditBox = CreateEditBox()
+
+//set font and textsize
+SetEditBoxFont( tmpEditBox, main_font)
+SetEditBoxTextSize( tmpEditBox, 3 )
+SetEditBoxText(tmpEditBox,default$)
+//make sure it doesn'y move about the viewport
+FixEditBoxToScreen(tmpEditBox,1)
+//position it
+SetEditBoxPosition(tmpEditBox,left#,bottom#)
+SetEditBoxSize( tmpEditBox, (GetScreenBoundsRight()-20)/2,height )
+//apply colours & style
+SetEditBoxBackgroundColor(tmpEditBox, 255, 255, 255, 100)
+SetEditBoxTextColor(tmpEditBox,0,0,0)
+SetEditBoxBorderSize( tmpEditBox, 0.1 ) 
+SetEditBoxBorderColor( tmpEditBox, 100, 100,255, 200 ) 
+//SetEditBoxVisible(incoming_chat_text,1)
+ReturnValue=tmpEditBox
+endfunction ReturnValue

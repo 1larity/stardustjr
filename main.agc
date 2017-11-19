@@ -22,6 +22,7 @@ SetErrorMode(2)
 #include "NetGamePlugin.agc"
 #include "netcode.agc"
 #include "chat.agc"
+#include "circle.agc"
 #constant debug =1
 global gamestate as gamestate
 global ChatEditFocus
@@ -33,12 +34,12 @@ load_font()
 setupNetSession()
 
 //setup planets
-populate_planets(gamestate.planets)
+populate_planets()
 //load and setup sound and graphics
 load_assets(gamestate)
 //drwa UI
 setup_interface()
-
+create_minimap()
 gamestate.playerShip.acceleration#=.05
 gamestate.playerShip.max_velocity#=2.5
 
@@ -66,6 +67,7 @@ do
 		print(GetWritePath())
 		print (GetScreenBoundsTop()) 
 		endif
-	//SetClearColor(7,15,51)
+	//SetClearColor(2,5,30)
+	
     Sync()
 loop
