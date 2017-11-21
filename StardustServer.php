@@ -161,7 +161,8 @@ function onAGKClientJoin($iClientID) {
 	//get the client name
 	$nick=GetClientName($iClientID);
 	writeLog($nick . " has joined the server ! :) (channel 0 by default)");
-	
+	$shipX=500;
+	$shipY=500;
 	//does the nickname have an account
 	try {
 	    $dbh = new PDO("mysql:host=".DBHOST.";dbname=".DBNAME, DBUSER, DBPW);
@@ -184,10 +185,24 @@ function onAGKClientJoin($iClientID) {
 	        if ($dbh->query($sql) == TRUE) {
 	            foreach ($dbh->query($sql) as $row){
 	                writeLog( 'Player Character ' . $row['player_account_UID'] .' - uid'. $row['firstname']);
-	                
-	        }
+	               //send data
+	                $characterData = new NetworkMessage();
+	                $characterData->AddNetworkMessageInteger(9007) // Message identifier for character data
+	                //add firstname from DB
+	                ->AddNetworkMessageString( $row['firstname'])
+	                //add surname from DB
+	                ->AddNetworkMessageString( $row['surname'])
+	                //add ship co-ords from DB
+	                ->AddNetworkMessageInteger( $row['sysx'])
+	                ->AddNetworkMessageInteger( $row['sysy'])
+	                //add credits from DB
+	                ->AddNetworkMessageInteger( $row['bluecredits'])
+	                ->Send($iClientID);
+	                $shipX=$row['sysx'];
+	                $shipY= $row['sysy'];
+	           }
 	        
-	    }
+	       }
 	        
 	    }
 	    //no nickname match
@@ -205,8 +220,8 @@ function onAGKClientJoin($iClientID) {
 	//load player data from JSON Here
 	
 	// Player Starts to X=577,Y=628 ? :)
-	NGP_SetClientState($iClientID, POS_X, 500);
-	NGP_SetClientState($iClientID, POS_Y, 500);
+	NGP_SetClientState($iClientID, POS_X, $shipX);
+	NGP_SetClientState($iClientID, POS_Y, $shipY);
 	//send current solar sytem data
 	//////sendWorldState(iClientID);
 	

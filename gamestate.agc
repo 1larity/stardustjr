@@ -64,6 +64,8 @@ endtype
 
 type session
 	clientName$ as String	//player's nickname
+	characterFirstname as String//the player character's firstname
+	characterSurname as String//the player character's surname
 	ServerHost$ as string	// IP Of Server
 	ServerPort as integer	//server port
 	NetworkLatency as integer//network latency

@@ -119,6 +119,16 @@ function NGP_onNetworkMessage(ServerCommand as integer,idMessage as integer)
 						recieveEarnings(value)
 						
 	endif
+	if ServerCommand = 9007 // if its message 90067 its characterdata message.
+				//message("ok")
+				//set gamestate character data to match server data
+				gamestate.session.characterFirstname = GetNetworkMessageString(idMessage)
+				gamestate.session.characterSurname = GetNetworkMessageString(idMessage)
+				gamestate.playerShip.position.x = GetNetworkMessageInteger(idMessage)
+				gamestate.playerShip.position.y = GetNetworkMessageInteger(idMessage)
+				gamestate.session.blueCredits = GetNetworkMessageInteger(idMessage)
+						
+	endif
 endfunction
 
 /********************************************************************************************************************************/
