@@ -117,6 +117,8 @@ SetTextAlignment( speed_text, ARIGHT )
 createSDtext(red_creds,"zero red ",GetScreenBoundsRight()-18,24)
 createSDtext(blue_creds,"zero blue ",GetScreenBoundsRight()-18,26)
 createSDtext(green_creds,"zero green ",GetScreenBoundsRight()-18,28)
+//award text
+createSDtext(award_text,"You Earned ",50,50)
 //display chat header
 createSDtext(chat_header_text,"Chat: ",GetScreenBoundsLeft()+20,70)
 
@@ -186,3 +188,23 @@ SetTextPosition(id,left#,bottom#)
 SetTextColor(id,255,255,255,255)
 
 endfunction 
+
+//update award display to show earnings
+function recieveEarnings(earned as integer)
+	//if the scan was more than 50% successful
+	if earned>5
+		//TODO show award text and animate
+		SetTextString(award_text,"You Earned "+str(earned)+ " blue crystals!")
+		//TODO animate award text and hide it
+		//update local blue credits variable
+		gamestate.session.blueCredits=gamestate.session.blueCredits+earned	
+		//update UI from local variable
+		SetTextString(blue_creds,str(gamestate.session.blueCredits))
+		PlaySound(scan_success)
+	
+	
+	//scan was not good enough
+	else
+		PlaySound(scan_fail)
+	endif
+endfunction

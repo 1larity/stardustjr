@@ -45,12 +45,31 @@ function doSim(gamestate REF as gamestate)
 endfunction
 
 function update_world(gamestate REF as gamestate)
+	// do every world update
 	check_refuel()
-	check_planet_scan(gamestate)
+			//orbit planet around sun
+	orbitPlanets()
 	positionButtons()
 	positionChat()
+	
+	//stuff we only want to do once every 1/10th of a second
+	//calculate tenths of a second
+	timer# as float
+	remainder as integer
+	whole as integer
+	timer#=Timer()
+	//get whole number of seconds by casting to integer
+	whole = timer#
+	//subtract seconds from timer giving just the fractions of a second
+	timer# = timer#-whole
+	remainder = abs(timer#*10)
+	print (str(whole) +"timer "+ str(timer#)+ "rem" + str(remainder))
+			
+	if remainder =0
+		check_planet_scan(gamestate)
+	endif
 
-	SetSpritePosition(minimap_player_ship,(GetScreenBoundsRight() - GetSpriteWidth( minimap))+(gamestate.playerShip.position.x/(gamestate.session.worldSize/20)),GetScreenBoundsTop()+gamestate.playerShip.position.y/(gamestate.session.worldSize/20))
+	SetSpritePositionByOffset(minimap_player_ship,(GetScreenBoundsRight() - GetSpriteWidth( minimap))+(gamestate.playerShip.position.x/(gamestate.session.worldSize/20)),GetScreenBoundsTop()+gamestate.playerShip.position.y/(gamestate.session.worldSize/20))
 	SetSpriteAngle (minimap_player_ship, gamestate.playerShip.angle# +90)
 	SetSpriteFrame(player_ship,gamestate.playerShip.current_turning)
 	//update ui
@@ -66,6 +85,14 @@ function check_refuel()
 		print("refueling")
 	endif
 endfunction
+     
+//orbit all planets
+function orbitPlanets()
+	index as integer
+	for index =0 to gamestate.planets.length
+		orbit(index)
+	next index	
+endfunction
             
 function check_planet_scan(gamestate REF as gamestate)
 	index as integer
@@ -75,15 +102,14 @@ function check_planet_scan(gamestate REF as gamestate)
 		if GetSpriteCollision(player_ship,index+50)
 			print("Scanning planet "+ gamestate.planets[index].name)
 			if isScanning=1
+				send_scan_tick()
+			endif
 				scanCompletion=scanCompletion+1
 				print("Scan "+ gamestate.planets[index].name+ " success "+str(scanCompletion))
 			endif
-		endif
-			
-		//orbit planet around sun
-		orbit(index)
 	next index	
 endfunction
+//update the orbit of one planet
 function orbit(planetIndex)
 			newPosition as Vector2D
 		centre as Vector2D
@@ -105,26 +131,26 @@ function orbit(planetIndex)
 		SetSpritePositionByOffset(planetIndex+50,gamestate.planets[planetIndex].position.x,gamestate.planets[planetIndex].position.y)
 endfunction
 function doScan( gamestate REF as gamestate)
+	//only do scan stuff if player has started a scan
 	if scanStart# <>0
+		//if the scan has completed
 		if (Timer() > scanStart#+3)
 			scanStart#=0
 			isScanning=0
-			//check scan was succesful and reaveal number
-			if scanCompletion>75
-				discoverNumber(gamestate.playerShip.position)
-				//add to player score here
-				
-			endif
 			//scan is complete, reset sucess counter
 			scanCompletion=0
+			//log with the server that the play has completed scan
+			send_end_scan()
 			SetSpriteVisible ( scan_wave, 0 )
+		//if the scan has not completed
 		else
 			scanScale# as float
 			scanScale#=(Timer()-scanStart#)/10
 			print("scanning")
-			//if we are scanning and over a planet add to scan completion
 			
+			//make scanning sprite visible
 			SetSpriteVisible ( scan_wave, 1 )
+			//do scaling thing with scan sprite to make it look cooler
 			if (Timer()	< scanStart#+1.5)
 				SetSpriteScale( scan_wave, scanScale#,scanScale#)
 				SetSpritePositionByOffset  ( scan_wave, 50, 50 )
@@ -142,6 +168,8 @@ function startScan(gamestate REF as gamestate)
 		isScanning=1
 		SetSpriteVisible ( scan_wave, 1 )
 		PlaySound ( scan_sound )
+		//send network message to start scan
+		send_start_scan()
 	endif
 endfunction
 

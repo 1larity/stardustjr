@@ -1,6 +1,6 @@
 #!/usr/bin/php -q
 <?php
-
+include('scan.php');
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
@@ -116,7 +116,8 @@
 /////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 /********************** CONFIGURATION **********************/
-
+error_reporting(E_ALL);
+ini_set("display_errors", 1); 
 date_default_timezone_set('Europe/Paris');
 
 define("SERVER_BIND_ADDRESS", false); // Server Address to Bind (set this to false to listen to any interface => 0.0.0.0)
@@ -127,7 +128,8 @@ define("SERVER_REFRESH_INTERVAL", 2500); // Server logic Timer in nanoseconds //
 /********************** PLUGINS ****************************/
 
 include "StardustServer_NetGamePlugin.php"; // We Load the NetGame Plugin ! :) all functions are prefixed by "NGP_"
-
+//array of current client scans
+$scanarray= array();
 /***********************************************************/
 /**********************   SERVER EVENTS   ******************/
 /***********************************************************/
@@ -168,6 +170,7 @@ function sendWorldstate($iClientID){
 	$worldstatestring = file_get_contents("map/system01.ded");
 	//send file name this also instructs client to get ready for solar system data
 	$filename = new NetworkMessage();
+	
 	$filename->AddNetworkMessageInteger(9000) // Message identifier to for filename
 	->AddNetworkMessageString("system02.ded")
 		->Send($iClientID);
@@ -176,6 +179,7 @@ function sendWorldstate($iClientID){
 	foreach ($JSON_array as $JSONLine){
 	 
 		$worldStateMessage = new NetworkMessage();
+	
 		$worldStateMessage->AddNetworkMessageInteger(9001) // Message identifier for JSON solar system data
 		//add current line of JSON to net message
 		->AddNetworkMessageString($JSONLine)
@@ -224,6 +228,7 @@ function onAGKClientUpdateVariable($iClientID, $sVariableName, $mVariableValue) 
 }
 
 function onAGKClientNetworkMessage($iSenderID, $iDestinationID, $Message) {
+    global  $scanarray;
 	// when a client (SenderID) send a NetworkMessage (AGK Command SendNetworkMessage)
 
 	// Forward Message to the NetGamePlugin to check for Clients Movements Messages and update internal WorldState (Mandatory)
@@ -242,7 +247,89 @@ function onAGKClientNetworkMessage($iSenderID, $iDestinationID, $Message) {
 		// Stop propagation of the message to the tzrgetted clients ? No ! ...
 		// StopPropagation();
 	}
+	// 9004 receive scanner "ticks" message
+	if ($iCommand == 9004) {
+		//  command 9004 for earnings
 
+		// Display in Logs
+		writeLog(GetClientName($iSenderID) . "Successful scan tick " . GetNetworkMessageInteger($Message));
+        //log tick in scan array
+        incrementScan($iSenderID);
+	}
+	// 9003 receive scan start message
+	if ($iCommand == 9003) {
+	    global  $scanarray;
+	    //  command 9003 for scan start
+	    //  Display in Logs
+	    $time =GetNetworkMessageInteger($Message);
+	    writeLog(GetClientName($iSenderID) . " Started scan at  " . date( "Y-m-d\TH:i:s\Z" ,$time));
+	    //create entry in scanning clients list
+	    $scanarray[] =  new Scan($iSenderID,  $time);
+	    var_dump($scanarray);
+	}
+	// 9005 receive scan end message
+	if ($iCommand == 9005) {
+	    //  command 9005 for scan end
+
+	    //calculate the value of the scan
+	    $earningsValue=totalScan($iSenderID);
+	    //delete the scan from scanlist
+	    deleteScan($iSenderID);
+	    //message client of thier sucess
+	    $earningsNotify = new NetworkMessage();
+	    //set network message id 9006=Earnings notification
+	    $earningsNotify->AddNetworkMessageInteger(9006)
+	    //add the value of the earnings (this will be based on scanner tier, number of others scanning within one min, the thing being scanned.
+	    ->AddNetworkMessageInteger($earningsValue)
+	    // send to client who performed scan
+	    ->Send($iSenderID);
+	    //  Display in Logs
+	   writeLog(GetClientName($iSenderID) . " ended scan at  " . date( "Y-m-d\TH:i:s\Z" ,GetNetworkMessageInteger($Message)). "value".$earningsValue );
+	}
+
+
+	
+}
+
+// delete a given scan
+function deleteScan($clientID){
+    global  $scanarray;
+    foreach ( $scanarray as $currentClient => $value ){
+        //find matching client Ids
+        if ($value->clientID==$clientID){
+            writelog("delete scan received, client ID is ".$clientID." total scan value ".$value->ticks  );
+                //delete scan from array
+                unset($scanarray[$currentClient]);
+        }
+    }
+}
+
+// sum the value of a given scan
+function totalScan($clientID){
+    global  $scanarray;
+    //tally of number of good scan pulses recieved from client
+    $pulses=0;
+    foreach ( $scanarray as $currentClient ){
+        //find matching client Ids
+        if ($currentClient->clientID==$clientID){
+            $pulses=   $currentClient->ticks;
+            writelog("completed client scan received, client ID is ".$clientID." total scan value ".$pulses  );
+            
+        }
+    }
+    return $pulses;
+}
+//log client scanning
+function incrementScan($clientID){
+    global  $scanarray;
+    foreach ( $scanarray as $currentClient ){
+        //find matching client Ids
+        if ($currentClient->clientID==$clientID){
+            $currentClient->ticks++;
+            writelog("Scan tick received, client ID is ".$clientID." scan value so far ". $currentClient->ticks );
+            
+        }
+    }
 }
 
 /*****************************************************************************

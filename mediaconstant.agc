@@ -9,6 +9,11 @@
 #constant stationPart02=11
 #constant planet01=20
 #constant sun=2
+#constant crystal=12
+#constant crystal_red=14
+#constant crystal_green=15
+//just first frame of cytal anim
+#constant crystal_single =13
 //sounds
 #constant scan_sound=1
 #constant scan_success=2
@@ -33,6 +38,7 @@ global CurrentNetState as integer
 #constant blue_creds=6004
 #constant green_creds=6005
 #constant speed_title=6006
+#constant award_text=6007
 
 //ENUMS
 #constant ALEFT=0

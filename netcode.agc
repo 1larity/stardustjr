@@ -10,13 +10,46 @@ function setupNetSession()
 	//get player name
 	 //-20,GetScreenBoundsBottom()-20
 	nickname$ = TextInput("EnterName"+right(str(GetMilliseconds()),3),GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
-	gamestate.session.ServerHost$ = "192.168.0.6" // IP Of MikeMax Linux Box for testing :)
+	gamestate.session.ServerHost$ = "192.168.0.6" // IP Of LAN
+//	gamestate.session.ServerHost$ = "82.7.176.97" // IP Of WAN
 	gamestate.session.ServerPort =33333
 	gamestate.session.NetworkLatency = 25 // Should always be less than the NETGAMEPLUGIN_WORLDSTATE_INTERVAL defined in the server plugin
 	gamestate.session.clientName$=nickname$
 	gamestate.session.networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$ ,gamestate.session.NetworkLatency)
 	gamestate.session.worldSize=2000
 CurrentNetState =1 
+endfunction
+
+// when a scan is in progress send scanner "ticks"
+function send_scan_tick()
+	newMsg as integer
+	newMsg=CreateNetworkMessage()
+	AddNetworkMessageInteger(newMsg,9004) // server command for earnings report
+	AddNetworkMessageInteger(newMsg,1)//send the quantity of tick (so we can just add them up on serverside to value scan)
+	SendNetworkMessage(gamestate.session.networkId,1,newMsg) // Send to server
+				
+endfunction
+
+// when a scan is started, send  start time to server
+function send_start_scan()
+	newMsg as integer
+	time as integer 
+	time=GetUnixTime() 
+	newMsg=CreateNetworkMessage()
+	AddNetworkMessageInteger(newMsg,9003) // server command for earnings report
+	AddNetworkMessageInteger(newMsg,time)//send the the start time of scan
+	SendNetworkMessage(gamestate.session.networkId,1,newMsg) // Send to server	
+endfunction
+
+// when a scan is complete, send  end time to server
+function send_end_scan()
+	newMsg as integer
+	time as integer 
+	time=GetUnixTime() 
+	newMsg=CreateNetworkMessage()
+	AddNetworkMessageInteger(newMsg,9005) // server command for earnings report
+	AddNetworkMessageInteger(newMsg,time)//send the the end time of scan
+	SendNetworkMessage(gamestate.session.networkId,1,newMsg) // Send to server	
 endfunction
 /******************************************************/
 /* When local client has disconnected from the server */
@@ -78,6 +111,13 @@ function NGP_onNetworkMessage(ServerCommand as integer,idMessage as integer)
 	endif
 		if ServerCommand = 9002 // It's an end of worlddata message !
 						closeMapFile()
+	endif
+	if ServerCommand = 9006 // if its message 9006 its an earnings message.
+						//message("ok")
+						value as integer
+						value = GetNetworkMessageInteger(idMessage)
+						recieveEarnings(value)
+						
 	endif
 endfunction
 

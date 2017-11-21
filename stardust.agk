@@ -51,13 +51,13 @@ FILE_7=setup.agc;-1
 FILE_8=circle.agc;-1
 
 [files]
-FILE_NAME_0=0;main.agc;890;0
-FILE_NAME_1=1;minimap.agc;1322;11
-FILE_NAME_2=0;interface.agc;4576;1
-FILE_NAME_3=0;fileops.agc;253;2
-FILE_NAME_4=0;netcode.agc;1091;3
-FILE_NAME_5=0;chat.agc;129;4
-FILE_NAME_6=0;circle.agc;81;5
+FILE_NAME_0=0;main.agc;609;0
+FILE_NAME_1=0;minimap.agc;4134;5
+FILE_NAME_2=0;particle.agc;79;11
+FILE_NAME_3=0;interface.agc;3848;1
+FILE_NAME_4=0;fileops.agc;253;2
+FILE_NAME_5=0;netcode.agc;1463;3
+FILE_NAME_6=0;circle.agc;189;4
 
 [project]
 description=

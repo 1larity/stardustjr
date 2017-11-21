@@ -23,6 +23,7 @@ SetErrorMode(2)
 #include "netcode.agc"
 #include "chat.agc"
 #include "circle.agc"
+//#include "Bezier Curve Library.agc"
 #constant debug =0
 #constant deepdebug =1
 global gamestate as gamestate

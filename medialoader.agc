@@ -17,7 +17,48 @@ function load_assets (gamestate REF as gamestate)
 endfunction
 
 function load_particles()
-	LoadImage(6,"funstar.png")
+	//load crystal animation strip
+	LoadImage(crystal,"crystal01.png")
+	//load the first frame from the strip
+	LoadSubImage ( crystal_single, crystal, "crystal0100.png" ) 
+	CreateParticles ( crystal_single, -1000, -1000 )
+	//make an animated sprite too
+	//we need 3 on for each credit type
+	crystalScale as float=0.015 //scale crystals
+	CreateSprite(crystal,crystal)
+	CreateSprite(crystal_red,crystal)
+	CreateSprite(crystal_green,crystal)
+	//set crystal colours
+	SetSpriteColor( crystal, 0, 0, 255, 255 )
+	SetSpriteColor( crystal_red, 255, 0, 0, 255 )
+	SetSpriteColor( crystal_green, 0, 255,0, 255 )
+	//setup anim frames 
+	SetSpriteAnimation(crystal,128,128,10)
+	SetSpriteSpeed( crystal, 6 ) 
+	SetSpriteAnimation(crystal_red,128,128,10)
+	SetSpriteFrame( crystal_red, 3 ) 
+	SetSpriteSpeed( crystal_red, 4 ) 
+	SetSpriteAnimation(crystal_green,128,128,10)
+	SetSpriteFrame( crystal_green, 6 ) 
+	SetSpriteSpeed( crystal_green, 5 ) 
+	//scale
+	SetSpriteScale(crystal,crystalScale,crystalScale)
+	SetSpriteScale(crystal_red,crystalScale,crystalScale)
+	SetSpriteScale(crystal_green,crystalScale,crystalScale)
+	//position
+	SetSpritePositionByOffset(crystal_red,GetScreenBoundsRight()-20,25)
+	SetSpritePositionByOffset(crystal,GetScreenBoundsRight()-20,27)
+	SetSpritePositionByOffset(crystal_green,GetScreenBoundsRight()-20,29)
+	//fix to screen
+	FixSpriteToScreen(crystal,1)
+	FixSpriteToScreen(crystal_red,1)
+	FixSpriteToScreen(crystal_green,1)
+	//start animations
+	PlaySprite( crystal ) 
+	PlaySprite( crystal_red ) 
+	PlaySprite( crystal_green ) 
+	//load star particle
+	LoadImage(discoveryParticles,"funstar.png")
 	CreateParticles ( discoveryParticles, -1000, -1000 )
 endfunction
 
@@ -120,7 +161,7 @@ function load_scan()
 	LoadImage ( scan_wave, "scanwave.png" )
 	CreateSprite (scan_wave,  5 )
 	SetSpriteAnimation(scan_wave,256,256,20)
-	PlaySprite(scan_wave,20)
+	PlaySprite(scan_wave,6)
 	SetSpriteScale(scan_wave,0.05,0.05)
 	SetSpritePositionByOffset  ( scan_wave, 50, 50 )
 	FixSpriteToScreen(scan_wave,1)
