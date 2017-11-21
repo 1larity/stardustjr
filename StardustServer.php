@@ -124,6 +124,10 @@ define("SERVER_BIND_ADDRESS", false); // Server Address to Bind (set this to fal
 define("SERVER_PORT", 33333); // Server Port the players will connect
 define("SERVER_NAME", "Stardust_Server"); // Server Display Name for clients/players
 define("SERVER_REFRESH_INTERVAL", 2500); // Server logic Timer in nanoseconds // depends on Server CPU capabilities
+DEFINE('DBUSER','Playeraccount');
+DEFINE('DBPW','akira01');
+DEFINE('DBHOST','localhost');
+DEFINE('DBNAME','test');
 
 /********************** PLUGINS ****************************/
 
@@ -149,12 +153,54 @@ function onAGKServerRefreshTimer() {
 
 function onAGKClientJoin($iClientID) {
 	// when a client Join the server (AGK Command : JoinNetwork )
-
+  
 	// Mandatory for cleaning states in NGP Plugin and Send World Step interval configuration to client
 	NGP_initClient($iClientID);
 
 	// Debug
-	writeLog(GetClientName($iClientID) . " has joined the server ! :) (channel 0 by default)");
+	//get the client name
+	$nick=GetClientName($iClientID);
+	writeLog($nick . " has joined the server ! :) (channel 0 by default)");
+	
+	//does the nickname have an account
+	try {
+	    $dbh = new PDO("mysql:host=".DBHOST.";dbname=".DBNAME, DBUSER, DBPW);
+	    /*** echo a message saying we have connected ***/
+	    writeLog( 'You Connected to database');
+	    
+	    /*** The SQL SELECT statement ***/
+	    $sql = "SELECT * FROM player_account WHERE account_id ='".$nick. "'";
+	    writelog($sql);
+	    //we found a match!
+	    if ($dbh->query($sql) == TRUE) {
+	    foreach ($dbh->query($sql) as $row)
+	    {
+	        writeLog( 'nick ' . $row['account_id'] .' - uid'. $row['UID']);
+	        //send appropriate account data back to client
+	        //get the player character data for this account
+	        $sql = "SELECT * FROM player_char WHERE player_account_UID ='".$row['UID']. "'";
+	        writelog($sql);
+	        //we found a match!
+	        if ($dbh->query($sql) == TRUE) {
+	            foreach ($dbh->query($sql) as $row){
+	                writeLog( 'Player Character ' . $row['player_account_UID'] .' - uid'. $row['firstname']);
+	                
+	        }
+	        
+	    }
+	        
+	    }
+	    //no nickname match
+	    }else{
+	        writelog("no player name match at login");
+	    }
+	    /*** close the database connection ***/
+	    $dbh = null;
+	}
+	catch(PDOException $e)
+	{
+	    echo $e->getMessage();
+	}
 	
 	//load player data from JSON Here
 	
