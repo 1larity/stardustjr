@@ -127,6 +127,11 @@ function NGP_onNetworkMessage(ServerCommand as integer,idMessage as integer)
 				gamestate.playerShip.position.x = GetNetworkMessageInteger(idMessage)
 				gamestate.playerShip.position.y = GetNetworkMessageInteger(idMessage)
 				gamestate.session.blueCredits = GetNetworkMessageInteger(idMessage)
+				gamestate.session.redCredits = GetNetworkMessageInteger(idMessage)
+				gamestate.session.greenCredits = GetNetworkMessageInteger(idMessage)
+				SetTextString(blue_creds,str(gamestate.session.blueCredits))
+				SetTextString(red_creds,str(gamestate.session.redCredits))
+				SetTextString(green_creds,str(gamestate.session.greenCredits))
 						
 	endif
 endfunction

@@ -29,7 +29,7 @@ function load_particles()
 	CreateSprite(crystal_red,crystal)
 	CreateSprite(crystal_green,crystal)
 	//set crystal colours
-	SetSpriteColor( crystal, 0, 0, 255, 255 )
+	SetSpriteColor( crystal, 150, 150, 255, 255 )
 	SetSpriteColor( crystal_red, 255, 0, 0, 255 )
 	SetSpriteColor( crystal_green, 0, 255,0, 255 )
 	//setup anim frames 

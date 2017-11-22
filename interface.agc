@@ -103,7 +103,7 @@ ChatEditFocus = 0
 //sync()
 endfunction
 
-//display the player's co-ordinate under minimap
+//display the player's co-ordinate speed and credits under minimap
 function ui_text()
 // Display stuff under minimap
 //co-ords

@@ -197,6 +197,8 @@ function onAGKClientJoin($iClientID) {
 	                ->AddNetworkMessageInteger( $row['sysy'])
 	                //add credits from DB
 	                ->AddNetworkMessageInteger( $row['bluecredits'])
+	                ->AddNetworkMessageInteger( $row['redcredits'])
+	                ->AddNetworkMessageInteger( $row['greencredits'])
 	                ->Send($iClientID);
 	                $shipX=$row['sysx'];
 	                $shipY= $row['sysy'];
