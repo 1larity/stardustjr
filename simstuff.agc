@@ -14,6 +14,8 @@ global minimapCounter as integer=5
 global isScanning as integer=0
 global scanStart# as float =0
 global scanCompletion as integer=0
+//array to track payout particles
+global payoutArray as MyParticle[]
 
 //simulate gameworld
 function doSim(gamestate REF as gamestate)
@@ -35,7 +37,7 @@ function doSim(gamestate REF as gamestate)
 	gamestate.playerShip.current_turning=3
 	doScan(gamestate)
 	update_world(gamestate)
-	//once every 100 iterations update minimap
+	//once every 10 iterations update minimap
 	if minimapCounter=10
 		create_minimap()
 		positionMiniMap()
@@ -51,7 +53,9 @@ function update_world(gamestate REF as gamestate)
 	orbitPlanets()
 	positionButtons()
 	positionChat()
-	
+	if payoutArray.length>-1
+		updatePayoutParticles()
+	endif
 	//stuff we only want to do once every 1/10th of a second
 	//calculate tenths of a second
 	timer# as float
@@ -439,4 +443,14 @@ function virtualInput()
 		if GetVirtualButtonPressed(3)=1
 		gamestate=loadMap( "testsave.ded" )
 	endif
+	//arbitary test button!
+	if GetVirtualButtonPressed(4)=1
+		newPayoutAnim(Random(1,3))
+	
+		//spriteLinearMove(start , endpoint , payCrystal )
+		//for index=0 to linelength
+			
+	endif
 endfunction
+
+
