@@ -19,6 +19,8 @@ global scanCompletion as integer=0
 global payoutArray as MyParticle[]
 //array to track scrolling text
 global textScrollArray as ScrollText[]
+//flag to indicate if tenth of a second timer has been triggered this second
+global OldRemainder as integer=0
 //simulate gameworld
 function doSim(gamestate REF as gamestate)
 	
@@ -39,8 +41,8 @@ function doSim(gamestate REF as gamestate)
 	gamestate.playerShip.current_turning=3
 	doScan(gamestate)
 	update_world(gamestate)
-	//once every 10 iterations update minimap
-	if minimapCounter=10
+	//once every 50 iterations update minimap
+	if minimapCounter=50
 		create_minimap()
 		positionMiniMap()
 		minimapCounter=1
@@ -64,9 +66,10 @@ function update_world(gamestate REF as gamestate)
 	//if we have scrolling text, deal with it
 	if textScrollArray.length>-1
 		updateScrollText()
-		updateScrollText()
+		
 	endif
 	
+	scrollStars()	
 	
 	//stuff we only want to do once every 1/10th of a second
 	//calculate tenths of a second
@@ -79,20 +82,57 @@ function update_world(gamestate REF as gamestate)
 	//subtract seconds from timer giving just the fractions of a second
 	timer# = timer#-whole
 	remainder = abs(timer#*10)
-	print (str(whole) +"timer "+ str(timer#)+ "rem" + str(remainder))
-			
-	if remainder =0
+
+		
+	if remainder  <> OldRemainder
+		OldRemainder=remainder //prevent this stuff being execute this tenth of a second
+		//we have outstanding payouts, send another gem on its way
+		if gamestate.session.bluepayout>0
+			newPayoutAnim(1)
+			gamestate.session.bluepayout=gamestate.session.bluepayout-1
+		endif
 		check_planet_scan(gamestate)
 	endif
-
-	SetSpritePositionByOffset(minimap_player_ship,(GetScreenBoundsRight() - GetSpriteWidth( minimap))+(gamestate.playerShip.position.x/(gamestate.session.worldSize/20)),GetScreenBoundsTop()+gamestate.playerShip.position.y/(gamestate.session.worldSize/20))
+	
+	SetSpritePositionByOffset(minimap_player_ship,(GetScreenBoundsRight() - GetSpriteWidth( minimap))+(GetSpriteXByOffset(player_ship)/(gamestate.session.worldSize/20)),GetScreenBoundsTop()+GetSpriteYByOffset(player_ship)/(gamestate.session.worldSize/20))
 	SetSpriteAngle (minimap_player_ship, gamestate.playerShip.angle# +90)
 	SetSpriteFrame(player_ship,gamestate.playerShip.current_turning)
 	//update ui
 	SetTextString(co_ords_text,"pos x:"+left(str(gamestate.playerShip.position.x),5)+" y:"+left(str(gamestate.playerShip.position.y),5))
 	SetTextString(speed_text,left(str(gamestate.playership.velocity#),5)+"km/s") 
-endfunction		
-
+	
+endfunction	
+/****************************************************************/
+//scrolls background stars, might be better to spread out update across several sim loops
+/****************************************************************/
+function scrollStars()	
+	index as integer
+  for index = 0 to 500
+		
+        // move all stars in the opposite direction the ship is traveling
+       // SetSpriteX ( index+500, GetSpriteX ( index +500) - gamestate.session.starfieldspeed [ index ] )
+       velocity_X as float
+       velocity_Y as float
+       // calculate the velocity vector from angle and speed
+       velocity_X = gamestate.playership.velocity#*cos(gamestate.playership.angle#)
+		velocity_Y = gamestate.playership.velocity#*sin(gamestate.playership.angle#)
+		SetSpritePosition(500+index, GetSpriteX(index+500)-velocity_X*gamestate.session.starfieldspeed [ index],GetSpriteY(index+500)-velocity_Y*gamestate.session.starfieldspeed [ index])
+        // when sprite has left the screen reset it
+        if ( GetSpriteX ( index+500 ) < -20 )
+        	SetSpritePosition(500+index,120,GetSpriteY(index+500))
+        endif
+        if ( GetSpriteX ( index+500 ) >120 )
+        	SetSpritePosition(500+index,-20,GetSpriteY(index+500))
+        endif
+                if ( GetSpriteY ( index+500 ) < -20 )
+        	SetSpritePosition(500+index,GetSpriteX ( index+500 ),120)
+        endif
+        if ( GetSpriteY ( index+500 ) >120 )
+        	SetSpritePosition(500+index,GetSpriteX ( index+500 ),-20)
+        endif
+      
+    next index
+endfunction
 
 //can the ship refuel (colliding with sun sprite)
 function check_refuel()
@@ -292,9 +332,10 @@ function doNetStuff()
 	endif
 
 
-
-	if abs(gamestate.playerShip.velocity#)>2.0
+	//if shipspeed is over 75%
+	if abs(gamestate.playerShip.velocity#)>(gamestate.playership.max_velocity#/100)*75
 		gamestate.playerShip.turnspeed# = (3/gamestate.playerShip.velocity#) * Tween#
+		//change handling
 	else
 		gamestate.playerShip.turnspeed#=12/2
 	endif
@@ -311,32 +352,34 @@ function doNetStuff()
 
 	if GetEditBoxHasFocus(chat_edit_text) = 0
 			//if "W" or Joystick down is pressed, speed up
-			if GetRawKeyState(87) or GetVirtualJoystickY( 1 )<0 or GetJoystickY()<0 // UP
-				print("up!")
+			if GetRawKeyState(87) or GetVirtualJoystickY( 1 )<-0.2 or GetJoystickY()<-0.2 // UP
+				//print("up!")
 				gamestate.playerShip.velocity#=gamestate.playerShip.velocity#+(0.01* Tween#)
 
 			endif
 			//if "A" or Joystick left is pressed, turn left
-			if GetRawKeyState(65) or GetVirtualJoystickX( 1 )<0 or GetJoystickX()<0 // LEFT
-				print("left!")
+			if GetRawKeyState(65) or GetVirtualJoystickX( 1 )<-0.2 or GetJoystickX()<-0.2 // LEFT
+				//print("left!")
+				gamestate.playerShip.current_turning=1
 				gamestate.playerShip.Angle#=gamestate.playerShip.Angle#-2.0*gamestate.playerShip.turnspeed#
 				NGP_SendMovement(gamestate.session.networkId, ANG_Y, -1,2.0*gamestate.playerShip.turnspeed#)
 			endif
 			//if "D" or Joystick right is pressed, turn right
-			if GetRawKeyState(68) or GetVirtualJoystickX( 1 )>0 or GetJoystickX()>0 // RIGHT
-				print("right!")
+			if GetRawKeyState(68) or GetVirtualJoystickX( 1 )>0.2 or GetJoystickX()>0.2 // RIGHT
+				//print("right!")
+				gamestate.playerShip.current_turning=5
 				gamestate.playerShip.Angle#=gamestate.playerShip.Angle#+2.0*gamestate.playerShip.turnspeed#
 				NGP_SendMovement(gamestate.session.networkId, ANG_Y, 1,2.0*gamestate.playerShip.turnspeed#)
 			endif
 			//if "S" or Joystick down is pressed, slow down
-			if GetRawKeyState(83) or GetVirtualJoystickY( 1 )>0 or GetJoystickY()>0 // BREAKs / Reverse
-				print("down!")
+			if GetRawKeyState(83) or GetVirtualJoystickY( 1 )>0.2 or GetJoystickY()>0.2 // BREAKs / Reverse
+				//print("down!")
 				gamestate.playerShip.velocity#=gamestate.playerShip.velocity#-(0.01* Tween#)
 
 			endif
 			
 			if GetRawKeyState(32) // SPACE
-				print("Boost !")
+				//print("Boost !")
 				UseBoost=1.5
 			endif
 			

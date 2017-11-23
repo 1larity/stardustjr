@@ -25,7 +25,7 @@ SetErrorMode(2)
 #include "circle.agc"
 //#include "Bezier Curve Library.agc"
 #constant debug =0
-#constant deepdebug =1
+#constant deepdebug =0
 global gamestate as gamestate
 global ChatEditFocus
 //setup screen

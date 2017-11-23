@@ -192,7 +192,7 @@ endfunction
 //update award display to show earnings
 function recieveEarnings(earned as integer)
 	//if the scan was more than 50% successful
-	if earned>5
+	if earned>15
 		discoverNumber(gamestate.playerShip.position)
 		//TODO show award text and animate
 		newScrollingText("You Earned "+str(earned)+ " blue crystals!")
@@ -201,7 +201,7 @@ function recieveEarnings(earned as integer)
 		//update UI from local variable
 		SetTextString(blue_creds,str(gamestate.session.blueCredits))
 		PlaySound(scan_success)
-	
+		gamestate.session.bluepayout=earned
 	
 	//scan was not good enough
 	else

@@ -96,7 +96,7 @@ function CreateLocalShipSprite()
 	LoadImage ( player_ship, "ship01.png" )
 	CreateSprite(player_ship,player_ship)
 	SetSpriteAnimation(player_ship,500,300,5)
-	SetSpriteDepth(player_ship,1)
+	SetSpriteDepth(player_ship,3)
 		
 	//set up player ship centre and scale
 	SetSpriteOffset( player_ship, GetSpriteWidth(player_ship)/2, GetSpriteHeight(player_ship)/2 ) 
@@ -119,6 +119,7 @@ function CreateLocalShipSprite()
 endfunction
 function load_stars(gamestate REF as gamestate)
 	LoadImage ( 50, "star.png" )
+	LoadImage (60, "dust.png")
 	//if normal mode genrate starfield
 	if debug=0
 		randomStars()
@@ -188,19 +189,39 @@ endfunction
 
 function randomStars()
 	starscale# as float 
-	
+		//set number of background stars set up (for hiding later in minimap)
+	gamestate.session.bgStars=100-1
 	index as integer
-	for index=0 to 5000
-		starscale#= Random(2,20)/500.0
-		CreateSprite(500+index,50)
-		SetSpriteDepth(index+500,51)
+	//we will use the same array to store the star speeds and speed of dust, we will just seed the speed multiplier differntly 
+	for index=0 to 500
+		starscale#= Random(2,20)/700.0
+		//the first 30% will be stars
+		if index < 100
+			CreateSprite(500+index,50)
+			// sort out a random speed for the stars
+			gamestate.session.starfieldspeed [ index ] = Random ( 1, 30 ) / 800.0
+			SetSpriteColor(index+500,Random(200,255),Random(200,255),Random(200,255),255)
+			SetSpriteDepth(index+500,51)
+		else 		
+			CreateSprite(500+index,60)
+			// sort out a faster random speed for dust
+			gamestate.session.starfieldspeed [ index ] = Random ( 1, 30 ) / 10.0
+			//dust is grey
+			dustbrightness as integer
+			dustbrightness=Random(1,255)
+			SetSpriteColor(index+500,dustbrightness,dustbrightness,dustbrightness,255)
+			SetSpriteDepth(index+500,2)
+		endif
+	
 		SetSpriteScale(index+500,starscale#,starscale#)
-		//SetSpriteColor(index+500,gamestate.starfield[index].r,gamestate.starfield[index].g,gamestate.starfield[index].b,255)
+		FixSpriteToScreen(500+index,1)
 		//randomly position stars
-		SetSpritePositionByOffset(500+index, Random(1,gamestate.session.worldSize),Random(1,gamestate.session.worldSize))
+		SetSpritePosition(500+index, Random(1,140)+gamestate.playerShip.position.x-20,Random(1,140)+gamestate.playerShip.position.y-20)
+		
 	next
+
 	//set number of background stars set up (for hiding later in minimap)
-	gamestate.session.bgStars=1000
+	gamestate.session.bgStars=500
 endfunction
 function starGrid()
 	starscale# as float=0.05
@@ -212,12 +233,10 @@ function starGrid()
 			CreateSprite(index+500,50)
 		SetSpriteDepth(index+500,51)
 		SetSpriteScale(index+500,starscale#,starscale#)
-		//SetSpriteColor(index+500,gamestate.starfield[index].r,gamestate.starfield[index].g,gamestate.starfield[index].b,255)
 		//randomly position stars
 		SetSpritePositionByOffset(index+500, xindex,yindex)
 		index =index+1
 	next yindex
 	next xindex
-		//set number of background stars set up (for hiding later in minimap)
-	gamestate.session.bgStars=index-1
+	
 endfunction
