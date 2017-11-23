@@ -111,13 +111,13 @@ function hide_unwanted()
 	//hide background stars
 	if GetSpriteExists(500)
 	index as integer
-	for index =0 to gamestate.session.bgStars-5 step 5
-		SetSpriteVisible(index+500,0)
-		SetSpriteVisible(index+501,0)
-		SetSpriteVisible(index+502,0)
-		SetSpriteVisible(index+503,0)
-		SetSpriteVisible(index+504,0)
-	next index
+	//for index =0 to gamestate.session.bgStars-5 step 5
+		//SetSpriteVisible(index+500,0)
+		//SetSpriteVisible(index+501,0)
+		//SetSpriteVisible(index+502,0)
+		//SetSpriteVisible(index+503,0)
+		//SetSpriteVisible(index+504,0)
+	//next index
 	endif
 	SetClearColor(30,30,30)
 	
@@ -156,13 +156,13 @@ function unhide_wanted()
 	//hide background stars
 	if GetSpriteExists(500)
 	index as integer
-	for index =1 to gamestate.session.bgStars-5 step 5 
-		SetSpriteVisible(index+500,1)
-		SetSpriteVisible(index+501,1)
-		SetSpriteVisible(index+502,1)
-		SetSpriteVisible(index+503,1)
-		SetSpriteVisible(index+504,1)
-	next index
+	//for index =1 to gamestate.session.bgStars-5 step 5 
+		//SetSpriteVisible(index+500,1)
+		//SetSpriteVisible(index+501,1)
+		//SetSpriteVisible(index+502,1)
+		//SetSpriteVisible(index+503,1)
+		//SetSpriteVisible(index+504,1)
+	//next index
 	endif
 	SetClearColor(2,5,30)
 endfunction

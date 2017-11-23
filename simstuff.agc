@@ -10,13 +10,15 @@ global Tween#
 global OwnSpriteColorChosen as integer
 global UseBoost as integer
 global ShipMaxSpeed# as float= 2.0
+//loop counter for delayng minimap updates
 global minimapCounter as integer=5
 global isScanning as integer=0
 global scanStart# as float =0
 global scanCompletion as integer=0
 //array to track payout particles
 global payoutArray as MyParticle[]
-
+//array to track scrolling text
+global textScrollArray as ScrollText[]
 //simulate gameworld
 function doSim(gamestate REF as gamestate)
 	
@@ -45,7 +47,9 @@ function doSim(gamestate REF as gamestate)
 	endif
 	minimapCounter=minimapcounter+1
 endfunction
-
+/****************************************************************/
+/*                  MAIN SIMULATION LOOP 						*/
+/****************************************************************/
 function update_world(gamestate REF as gamestate)
 	// do every world update
 	check_refuel()
@@ -53,9 +57,17 @@ function update_world(gamestate REF as gamestate)
 	orbitPlanets()
 	positionButtons()
 	positionChat()
+	//if we have active payout particles, update them
 	if payoutArray.length>-1
 		updatePayoutParticles()
 	endif
+	//if we have scrolling text, deal with it
+	if textScrollArray.length>-1
+		updateScrollText()
+		updateScrollText()
+	endif
+	
+	
 	//stuff we only want to do once every 1/10th of a second
 	//calculate tenths of a second
 	timer# as float
@@ -446,6 +458,7 @@ function virtualInput()
 	//arbitary test button!
 	if GetVirtualButtonPressed(4)=1
 		newPayoutAnim(Random(1,3))
+		newScrollingText("testScrolling text!" )
 	
 		//spriteLinearMove(start , endpoint , payCrystal )
 		//for index=0 to linelength

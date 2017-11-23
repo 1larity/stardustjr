@@ -13,7 +13,12 @@ function load_assets (gamestate REF as gamestate)
 	CreateLocalShipSprite() // Create local direct sprite for the local client 
 	load_scan()
 	load_particles()
-	
+	load_NPC()
+endfunction
+
+function load_NPC()
+	LoadImage(kat_serious,"katfrontal.png")
+	LoadImage(NPCFrame,"characterbezel.png")
 endfunction
 
 function load_particles()

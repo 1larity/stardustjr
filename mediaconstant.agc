@@ -14,6 +14,9 @@
 #constant crystal_green=15
 //just first frame of cytal anim
 #constant crystal_single =13
+#constant NPCFrame=16
+//NPC sprites
+#constant kat_serious=100
 //sounds
 #constant scan_sound=1
 #constant scan_success=2
@@ -28,7 +31,6 @@
 #constant mine_button_text=4
 //Editbox ID of main chatbox
 global incoming_chat_text as integer
-
 global chat_edit_text as integer
 global CurrentNetState as integer 
 #constant chat_header_text=6000
@@ -38,9 +40,9 @@ global CurrentNetState as integer
 #constant blue_creds=6004
 #constant green_creds=6005
 #constant speed_title=6006
-#constant award_text=6007
 
 //ENUMS
 #constant ALEFT=0
 #constant ACENTRE=1
 #constant ARIGHT=2
+

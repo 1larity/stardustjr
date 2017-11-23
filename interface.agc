@@ -1,4 +1,9 @@
-//setup scan button 
+//setup inteface and do interface related stuff
+Type ScrollText
+	vposition# as float
+	text$ as string
+	textID as integer
+endtype
 
 function setup_interface()
 	createChatBox(30,95)
@@ -117,8 +122,6 @@ SetTextAlignment( speed_text, ARIGHT )
 createSDtext(red_creds,"zero red ",GetScreenBoundsRight()-18,24)
 createSDtext(blue_creds,"zero blue ",GetScreenBoundsRight()-18,26)
 createSDtext(green_creds,"zero green ",GetScreenBoundsRight()-18,28)
-//award text
-createSDtext(award_text,"You Earned ",50,50)
 //display chat header
 createSDtext(chat_header_text,"Chat: ",GetScreenBoundsLeft()+20,70)
 
@@ -173,29 +176,26 @@ endfunction ReturnValue
 /*			 creates text with fixed style 					*/ 
 /**********************************************************/
 function createSDtext(id as integer, default$ as string,left# as float, bottom# as float)
-
 	CreateText(id,default$)
-
-//set font and textsize
-SetTextFont( id, main_font)
-SetTextSize( id, 2 )
-SetTextString(id,default$)
-//make sure it doesn'y move about the viewport
-FixTextToScreen(id,1)
-//position it
-SetTextPosition(id,left#,bottom#)
-//apply colours & style
-SetTextColor(id,255,255,255,255)
-
+	//set font and textsize
+	SetTextFont( id, main_font)
+	SetTextSize( id, 2 )
+	SetTextString(id,default$)
+	//make sure it doesn'y move about the viewport
+	FixTextToScreen(id,1)
+	//position it
+	SetTextPosition(id,left#,bottom#)
+	//apply colours & style
+	SetTextColor(id,255,255,255,255)
 endfunction 
 
 //update award display to show earnings
 function recieveEarnings(earned as integer)
 	//if the scan was more than 50% successful
 	if earned>5
+		discoverNumber(gamestate.playerShip.position)
 		//TODO show award text and animate
-		SetTextString(award_text,"You Earned "+str(earned)+ " blue crystals!")
-		//TODO animate award text and hide it
+		newScrollingText("You Earned "+str(earned)+ " blue crystals!")
 		//update local blue credits variable
 		gamestate.session.blueCredits=gamestate.session.blueCredits+earned	
 		//update UI from local variable
@@ -207,4 +207,68 @@ function recieveEarnings(earned as integer)
 	else
 		PlaySound(scan_fail)
 	endif
+endfunction
+
+function updateScrollText()
+	index as integer
+	alpha as integer
+	//for all entries in the payout array
+	for index=0 to textScrollArray.length
+		//increment start vector by speed to move one step closer to endpoint 
+	textScrollArray[index].vPosition# =textScrollArray[index].vPosition#-0.5
+		SetTextPosition(textScrollArray[index].textID,50,textScrollArray[index].vPosition#)
+		//decrease alpha of text at end
+		if textScrollArray[index].vPosition#<200
+					alpha=textScrollArray[index].vPosition#*12.75
+		endif
+		if textScrollArray[index].vPosition#>30
+					alpha=(637)-(textScrollArray[index].vPosition#*12.75)
+		endif
+		//set text alpha
+		SetTextColorAlpha (textScrollArray[index].textID,alpha)
+	
+		//if the particle has reached the endpoint, delete it
+		if (textScrollArray[index].vPosition#< 0)
+			deleteText(textScrollArray[index].textID)
+			textScrollArray.remove(index)
+		endif
+	next
+endfunction
+
+//creates new scrolling text object and stores in scrollingtext array
+function newScrollingText(text$ as string)
+	//create 2 text objects, text and shadow.
+	TextID as integer
+	TextID2 as integer
+	MyScrollingText as ScrollText
+	MyScrollingText2 as ScrollText
+	MyScrollingText.vPosition#=40
+	MyScrollingText2.vPosition#=40.5
+	//create shadow first so it is behind
+	TextID2=CreateText(text$) 
+	TextID=CreateText(text$) 
+	//apply colours & style to main text
+	SetTextColor(TextID,255,255,255,0)
+	SetTextX(TextID,50)
+	SetTextY(TextID,MyScrollingText.vPosition#)
+	FixTextToScreen(TextID,1)
+	SetTextAlignment(TextID, 1 ) 
+	//set font and textsize
+	SetTextFont( TextID, main_font)
+	SetTextSize( TextID, 5 )
+	//apply colours & style to shadow
+	SetTextColor(TextID2,1,1,1,0)
+	SetTextX(TextID2,5.5)
+	SetTextY(TextID2,MyScrollingText2.vPosition#)
+	FixTextToScreen(TextID2,1)
+	SetTextAlignment(TextID2, 1 ) 
+	//set font and textsize
+	SetTextFont( TextID2, main_font)
+	SetTextSize( TextID2, 5 )
+
+	MyScrollingText.textID=TextID
+	MyScrollingText2.textID=TextID2
+	textScrollArray.insert(MyScrollingText2)
+	textScrollArray.insert(MyScrollingText)
+	sync()
 endfunction

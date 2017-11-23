@@ -4,14 +4,14 @@
 /*intercept network events and act on them. Encode/decode*/
 /* network message IDs to resolve specific command types*/
 /******************************************************/
-//set up minimum 
+//set up minimum networking
 function setupNetSession()
 	nickname$ as string
 	//get player name
 	 //-20,GetScreenBoundsBottom()-20
 	nickname$ = TextInput("EnterName"+right(str(GetMilliseconds()),3),GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
-	gamestate.session.ServerHost$ = "192.168.0.6" // IP Of LAN
-//	gamestate.session.ServerHost$ = "82.7.176.97" // IP Of WAN
+	//gamestate.session.ServerHost$ = "192.168.0.6" // IP Of LAN
+		gamestate.session.ServerHost$ = "82.7.176.97" // IP Of WAN
 	gamestate.session.ServerPort =33333
 	gamestate.session.NetworkLatency = 25 // Should always be less than the NETGAMEPLUGIN_WORLDSTATE_INTERVAL defined in the server plugin
 	gamestate.session.clientName$=nickname$
@@ -129,6 +129,7 @@ function NGP_onNetworkMessage(ServerCommand as integer,idMessage as integer)
 				gamestate.session.blueCredits = GetNetworkMessageInteger(idMessage)
 				gamestate.session.redCredits = GetNetworkMessageInteger(idMessage)
 				gamestate.session.greenCredits = GetNetworkMessageInteger(idMessage)
+				//update ui, I probably shouldnt be doing this here
 				SetTextString(blue_creds,str(gamestate.session.blueCredits))
 				SetTextString(red_creds,str(gamestate.session.redCredits))
 				SetTextString(green_creds,str(gamestate.session.greenCredits))
