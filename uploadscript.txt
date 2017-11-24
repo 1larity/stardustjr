@@ -1,0 +1,12 @@
+option echo on 
+option batch on 
+option confirm off 
+open sftp://root:Observa90@192.168.0.6
+
+#Change LOCAL directory 
+lcd "f:\projects\agk\stardustjr\"
+#change host directory
+cd ../var/www/
+put StardustServer.php
+put StardustServer_NetGamePlugin.php
+exit

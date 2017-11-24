@@ -164,8 +164,10 @@ function NGP_onLocalPlayerMoveUpdate(iNetID, UpdatedMove as NGP_Slot)
 	gamestate.playership.position.x= UpdatedMove.Slot[POS_X] 
 	gamestate.playership.position.y= UpdatedMove.Slot[POS_Y] 
 	SetSpritePositionByOffset(player_ship,UpdatedMove.Slot[POS_X] ,UpdatedMove.Slot[POS_Y])
+	SetSpritePositionByOffset(player_ship_notint,UpdatedMove.Slot[POS_X] ,UpdatedMove.Slot[POS_Y])
 	setViewOffset( UpdatedMove.Slot[POS_X] - getVirtualWidth() / 2.0 ,UpdatedMove.Slot[POS_Y] - getVirtualHeight() / 2.0  )
 	SetSpriteAngle(player_ship,UpdatedMove.Slot[ANG_Y]+90)
+	SetSpriteAngle(player_ship_notint,UpdatedMove.Slot[ANG_Y]+90)
 	SetTextPosition(localNickLabel,UpdatedMove.Slot[POS_X] ,UpdatedMove.Slot[POS_Y]-10)	
 		
 endfunction

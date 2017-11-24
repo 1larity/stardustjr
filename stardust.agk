@@ -37,7 +37,7 @@ firebase_config_path=
 [html5_settings]
 commands_used=0
 dynamic_memory=0
-output_path=
+output_path=F:\\projects\\agk\\stardustjr\\HTML5
 
 [projectfiles]
 FILE_0=main.agc;-1
@@ -51,13 +51,7 @@ FILE_7=setup.agc;-1
 FILE_8=circle.agc;-1
 
 [files]
-FILE_NAME_0=0;main.agc;609;0
-FILE_NAME_1=0;minimap.agc;4134;5
-FILE_NAME_2=1;particle.agc;4012;6
-FILE_NAME_3=0;interface.agc;3510;1
-FILE_NAME_4=0;fileops.agc;253;2
-FILE_NAME_5=0;netcode.agc;5912;3
-FILE_NAME_6=0;circle.agc;189;4
+FILE_NAME_0=1;main.agc;493;0
 
 [project]
 description=

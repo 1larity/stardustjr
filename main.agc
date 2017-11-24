@@ -6,23 +6,24 @@
 SetErrorMode(2)
 //Require declaration of vars
 #option_explicit
-//include code...
+//include code, associated classes are arranged in library folders "l_xxxxxxxx"
 #include "setup.agc"
-#include "mediaconstant.agc"
+#include "l_asset_manager\mediaconstant.agc"
 #include "starfield.agc"
-#include "medialoader.agc"
-#include "simstuff.agc"
-#include "gamestate.agc"
-#include "particle.agc"
-#include "interface.agc"
+#include "l_asset_manager\medialoader.agc"
+#include "l_simulation\simstuff.agc"
+#include "l_simulation\spacestation.agc"
+#include "l_simulation\gamestate.agc"
+#include "l_simulation\particle.agc"
+#include "l_interface\interface.agc"
 #include "fileops.agc"
-#include "minimap.agc"
-#include "vector.agc"
-#include "ship.agc"
+#include "l_interface\minimap.agc"
+#include "l_math\vector.agc"
+#include "l_simulation\ship.agc"
 #include "NetGamePlugin.agc"
 #include "netcode.agc"
 #include "chat.agc"
-#include "circle.agc"
+#include "l_math\circle.agc"
 //#include "Bezier Curve Library.agc"
 #constant debug =0
 #constant deepdebug =0
