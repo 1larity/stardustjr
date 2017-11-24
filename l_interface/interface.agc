@@ -112,16 +112,16 @@ endfunction
 function ui_text()
 // Display stuff under minimap
 //co-ords
-createSDtext(co_ords_text,"pos: ",GetScreenBoundsRight()-20,20)
+createSDtext(co_ords_text,"pos: ",GetScreenBoundsRight()-20,22)
 //speedo
-createSDtext(speed_text,"0.0km/s ",GetScreenBoundsRight(),22)
-createSDtext(speed_title,"speed:",GetScreenBoundsRight()-20,22)
+createSDtext(speed_text,"0.0km/s ",GetScreenBoundsRight(),24)
+createSDtext(speed_title,"speed:",GetScreenBoundsRight()-20,24)
 //align right
 SetTextAlignment( speed_text, ARIGHT ) 
 //creds display
-createSDtext(red_creds,"zero red ",GetScreenBoundsRight()-18,24)
-createSDtext(blue_creds,"zero blue ",GetScreenBoundsRight()-18,26)
-createSDtext(green_creds,"zero green ",GetScreenBoundsRight()-18,28)
+createSDtext(red_creds,"zero red ",GetScreenBoundsRight()-18,26)
+createSDtext(blue_creds,"zero blue ",GetScreenBoundsRight()-18,28)
+createSDtext(green_creds,"zero green ",GetScreenBoundsRight()-18,30)
 //display chat header
 createSDtext(chat_header_text,"Chat: ",GetScreenBoundsLeft()+20,70)
 
@@ -145,7 +145,7 @@ function positionChat()
 	SetEditBoxPosition(chat_edit_text,GetScreenBoundsLeft()+20,95.0)
 	SetEditBoxSize(chat_edit_text,GetScreenBoundsRight()-40,5)	
 	//map co-ords text
-	SetTextPosition(co_ords_text,GetScreenBoundsRight()-20,20)
+	SetTextPosition(co_ords_text,GetScreenBoundsRight()-20,22)
 endfunction
 /**********************************************************/
 /*			 creates textboxes with fixed style 					*/ 

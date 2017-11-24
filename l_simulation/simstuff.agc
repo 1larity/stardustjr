@@ -23,8 +23,10 @@ global textScrollArray as ScrollText[]
 global OldRemainder as integer=0
 //simulate gameworld
 function doSim(gamestate REF as gamestate)
-	
-	if IsNetworkActive(gamestate.session.networkId)
+		while gamestate.session.networkId =0
+	gamestate.session.networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$ ,gamestate.session.NetworkLatency)
+	endwhile
+	if IsNetworkActive(gamestate.session.networkId)=1
 		doNetStuff()
 	endif
 	
@@ -68,7 +70,13 @@ function update_world(gamestate REF as gamestate)
 		updateScrollText()
 		
 	endif
-	
+	//if we have stations, deal with them
+	index as integer
+	if gamestate.stations.length>-1
+		for index =0 to gamestate.stations.length
+			rotatestation(index,.5)
+		next
+	endif
 	scrollStars()	
 	
 	//stuff we only want to do once every 1/10th of a second

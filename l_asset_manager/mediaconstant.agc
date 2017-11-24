@@ -6,8 +6,6 @@
 #constant minimap=7
 #constant minimap_player_ship=8
 #constant joystickImage=9
-#constant stationPart01=10
-#constant stationPart02=11
 #constant planet01=20
 #constant sun=2
 #constant crystal=12
@@ -17,7 +15,7 @@
 #constant crystal_single =13
 #constant NPCFrame=16
 //NPC sprites
-#constant kat_serious=100
+#constant kat_serious=200
 //sounds
 #constant scan_sound=1
 #constant scan_success=2

@@ -5,8 +5,8 @@
 type gamestate
     playerShip as ship
     session as session
-	planets as planet[13]
-	stations as station[2]
+	planets as planet[7]
+	stations as station[]
 	settings as settings
 endtype
 
@@ -26,23 +26,13 @@ type planet
 	orbit as integer
 endtype
 
-type station
-	stationID as integer
-	name as String
-	position as Vector2D
-	facilities as facility[5]
-	stationType as integer
-endtype
+
 
 type asteroid
 	position as Vector2D
 	resources as resource[2]
 	drift as Vector2D
 	size as float
-endtype
-
-type facility 
-	facilityType as string
 endtype
 
 type resource

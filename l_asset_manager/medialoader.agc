@@ -14,6 +14,7 @@ function load_assets (gamestate REF as gamestate)
 	load_scan()
 	load_particles()
 	load_NPC()
+	load_station()
 endfunction
 
 function load_NPC()
@@ -51,9 +52,9 @@ function load_particles()
 	SetSpriteScale(crystal_red,crystalScale,crystalScale)
 	SetSpriteScale(crystal_green,crystalScale,crystalScale)
 	//position
-	SetSpritePositionByOffset(crystal_red,GetScreenBoundsRight()-20,25)
-	SetSpritePositionByOffset(crystal,GetScreenBoundsRight()-20,27)
-	SetSpritePositionByOffset(crystal_green,GetScreenBoundsRight()-20,29)
+	SetSpritePositionByOffset(crystal_red,GetScreenBoundsRight()-20,27)
+	SetSpritePositionByOffset(crystal,GetScreenBoundsRight()-20,29)
+	SetSpritePositionByOffset(crystal_green,GetScreenBoundsRight()-20,31)
 	//fix to screen
 	FixSpriteToScreen(crystal,1)
 	FixSpriteToScreen(crystal_red,1)
@@ -67,17 +68,11 @@ function load_particles()
 	CreateParticles ( discoveryParticles, -1000, -1000 )
 endfunction
 
-function load_station(gamestate REF as gamestate)
-
-	LoadImage (stationPart01, "stationPart01.png")
-	LoadImage (stationPart02, "stationPart02.png")
+function load_station() 
 	
-	CreateSprite (stationPart02,stationPart02)
-	index as integer
-	for index=0 to 3
-		CreateSprite (stationPart01+index,stationPart01)
-		SetSpriteAngle(stationPart01+index,index*90)
-	next index
+
+gamestate.stations.insert(makeSpaceStation(500,500))
+gamestate.stations[0].StationID=1
 endfunction
 
 //setup playr minimap sprite
@@ -98,9 +93,9 @@ function CreateLocalShipSprite()
 	CreateSprite(player_ship,player_ship)
 	CreateSprite(player_ship_notint,player_ship_notint)
 	SetSpriteAnimation(player_ship,500,300,5)
-	SetSpriteDepth(player_ship,4)
+	SetSpriteDepth(player_ship,16)
 	SetSpriteAnimation(player_ship_notint,192,300,5)
-	SetSpriteDepth(player_ship_notint,1)
+	SetSpriteDepth(player_ship_notint,15)
 	//set up player ship centre and scale
 	SetSpriteOffset( player_ship, GetSpriteWidth(player_ship)/2, GetSpriteHeight(player_ship)/2 ) 
 	SetSpriteScale(player_ship,0.02,0.02) 
@@ -197,7 +192,7 @@ function randomStars()
 	index as integer
 	//we will use the same array to store the star speeds and speed of dust, we will just seed the speed multiplier differntly 
 	for index=0 to 500
-		starscale#= Random(2,20)/700.0
+		starscale#= Random(2,20)/500.0
 		//the first 30% will be stars
 		if index < 100
 			CreateSprite(500+index,50)

@@ -15,8 +15,10 @@ function setupNetSession()
 	gamestate.session.ServerPort =33333
 	gamestate.session.NetworkLatency = 25 // Should always be less than the NETGAMEPLUGIN_WORLDSTATE_INTERVAL defined in the server plugin
 	gamestate.session.clientName$=nickname$
-	gamestate.session.networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$ ,gamestate.session.NetworkLatency)
 	gamestate.session.worldSize=2000
+	while gamestate.session.networkId =0
+	gamestate.session.networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$ ,gamestate.session.NetworkLatency)
+	endwhile
 CurrentNetState =1 
 endfunction
 

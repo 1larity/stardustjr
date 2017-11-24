@@ -3,7 +3,7 @@ REM ftp php files
 
 REM copy in libs from test/dev
 REM copy station lib in from test
-copy ..\test\spacestation.agc ..\stardustjr\l_simulation
+REM copy ..\test\spacestation.agc ..\stardustjr\l_simulation
 
 REM copy files to build folder
 REM Images

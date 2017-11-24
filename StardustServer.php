@@ -179,7 +179,7 @@ function onAGKClientJoin($iClientID) {
 	        writeLog( 'nick ' . $row['account_id'] .' - uid'. $row['UID']);
 	        //send appropriate account data back to client
 	        //get the player character data for this account
-	        $sql = "SELECT * FROM player_char WHERE player_account_UID ='".$row['UID']. "'";
+	        $sql = "SELECT * FROM playercharsinsystem WHERE player_account_UID ='".$row['UID']. "'";
 	        writelog($sql);
 	        //we found a match!
 	        if ($dbh->query($sql) == TRUE) {
@@ -199,18 +199,29 @@ function onAGKClientJoin($iClientID) {
 	                ->AddNetworkMessageInteger( $row['bluecredits'])
 	                ->AddNetworkMessageInteger( $row['redcredits'])
 	                ->AddNetworkMessageInteger( $row['greencredits'])
+	                //add solar system name from DB
+	                ->AddNetworkMessageString( $row['sysname'])
+	                //add system co-ords from DB (this serves as the system UID)
+	                ->AddNetworkMessageInteger( $row['x'])
+	                ->AddNetworkMessageInteger( $row['y'])
+	                ->AddNetworkMessageInteger( $row['z'])
 	                ->Send($iClientID);
 	                $shipX=$row['sysx'];
 	                $shipY= $row['sysy'];
+	                //get the solar system data for this character
+	                $sql = "SELECT * FROM system_resources WHERE x ='".$row['x']. "' and y='".$row['y']."'' and z='".$row['z']."'";
+	                    
+	                ;
+	                writelog($sql);
 	           }
-	        
+	           //no nickname match
+	        }else{
+	            writelog("no player name match at login");
+	        }
 	       }
 	        
 	    }
-	    //no nickname match
-	    }else{
-	        writelog("no player name match at login");
-	    }
+	  
 	    /*** close the database connection ***/
 	    $dbh = null;
 	}
