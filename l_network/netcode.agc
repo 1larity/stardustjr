@@ -9,17 +9,47 @@ function setupNetSession()
 	nickname$ as string
 	//get player name
 	 //-20,GetScreenBoundsBottom()-20
-	nickname$ = TextInput("EnterName"+right(str(GetMilliseconds()),3),GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
+	if debug=0
+		nickname$ = TextInput("EnterName"+right(str(GetMilliseconds()),3),GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
+	else
+		nickname$ = TextInput("Rich",GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
+	endif	
 	//gamestate.session.ServerHost$ = "192.168.0.6" // IP Of LAN
-		gamestate.session.ServerHost$ = "82.7.176.97" // IP Of WAN
+	//gamestate.session.ServerHost$ = "82.7.176.97" // IP Of WAN
+	gamestate.session.ServerHost$ = "52.56.171.217" // IP Of AWS
 	gamestate.session.ServerPort =33333
-	gamestate.session.NetworkLatency = 25 // Should always be less than the NETGAMEPLUGIN_WORLDSTATE_INTERVAL defined in the server plugin
+	gamestate.session.NetworkLatency = 50 // Should always be less than the NETGAMEPLUGIN_WORLDSTATE_INTERVAL defined in the server plugin
 	gamestate.session.clientName$=nickname$
 	gamestate.session.worldSize=2000
 	while gamestate.session.networkId =0
 	gamestate.session.networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$ ,gamestate.session.NetworkLatency)
 	endwhile
 CurrentNetState =1 
+endfunction
+
+function login()
+	writeDebug("logging in")
+	gamestate.session.loggedIn=0
+	while gamestate.session.loggedIn=0
+		print ("waiting for login")
+		sync()
+		NGP_UpdateNetwork(gamestate.session.networkId) 
+	endwhile
+	if gamestate.session.loggedIn=2
+		//create_new_user()
+	endif	
+		if gamestate.session.loggedIn=1
+		welcome_known_user()
+	endif	
+endfunction
+
+function welcome_known_user()
+	welcomeMessage as integer
+	createSDtext(welcomeMessage,"Welcome back to Stardust"+gamestate.session.clientName$,50,50)
+	SetTextAlignment(welcomeMessage,ACENTRE)
+	sync()
+	sleep(3000)
+	DeleteText(welcomeMessage)
 endfunction
 
 // when a scan is in progress send scanner "ticks"
@@ -121,7 +151,8 @@ function NGP_onNetworkMessage(ServerCommand as integer,idMessage as integer)
 						recieveEarnings(value)
 						
 	endif
-	if ServerCommand = 9007 // if its message 90067 its characterdata message.
+	if ServerCommand = 9007 // if its message 9007 its characterdata message.
+		
 				//message("ok")
 				//set gamestate character data to match server data
 				gamestate.session.characterFirstname = GetNetworkMessageString(idMessage)
@@ -131,11 +162,39 @@ function NGP_onNetworkMessage(ServerCommand as integer,idMessage as integer)
 				gamestate.session.blueCredits = GetNetworkMessageInteger(idMessage)
 				gamestate.session.redCredits = GetNetworkMessageInteger(idMessage)
 				gamestate.session.greenCredits = GetNetworkMessageInteger(idMessage)
-				//update ui, I probably shouldnt be doing this here
-				SetTextString(blue_creds,str(gamestate.session.blueCredits))
-				SetTextString(red_creds,str(gamestate.session.redCredits))
-				SetTextString(green_creds,str(gamestate.session.greenCredits))
-						
+				gamestate.session.greenCredits = GetNetworkMessageInteger(idMessage)
+				gamestate.session.systemname$ = GetNetworkMessageString(idMessage)
+				sysx = GetNetworkMessageInteger(idMessage)
+				sysy = GetNetworkMessageInteger(idMessage)
+				sysz = GetNetworkMessageInteger(idMessage)
+
+				writeDebug("Character loaded, pos "+str(gamestate.playerShip.position.x) +"y "+str(gamestate.playerShip.position.y))	
+	endif
+	if ServerCommand = 9008 // if its message 9008 its system data message.
+				sysx as integer
+				sysy as integer
+				sysz as integer
+				//message("ok")
+				//set gamestate character data to match server data
+
+				gamestate.session.systemname$ = GetNetworkMessageString(idMessage)
+				sysx = GetNetworkMessageInteger(idMessage)
+				sysy = GetNetworkMessageInteger(idMessage)
+				sysz = GetNetworkMessageInteger(idMessage)
+			
+				writeDebug("system "+gamestate.session.systemname$ +"system co-ords "+str(sysx)+" "+str(sysy)+" "+str(sysz))	
+	endif
+	if ServerCommand = 9009 // if its message 9008 its a login message.
+		welcomeMessage$ as String
+		welcomeMessage$=GetNetworkMessageString(idMessage)
+		if welcomeMessage$="Unknown user"
+			gamestate.session.loggedIn=2
+			writeDebug("Not logged in, no account")
+		endif
+		if welcomeMessage$="Welcome Back"
+			gamestate.session.loggedIn=1
+			writeDebug("Logged in successfully")
+		endif
 	endif
 endfunction
 
@@ -163,15 +222,11 @@ endfunction
 /* When the local client has moved (After Prediction and Server Reconciliation) */ 
 /********************************************************************************/
 function NGP_onLocalPlayerMoveUpdate(iNetID, UpdatedMove as NGP_Slot)
+	if gamestate.session.loggedIn=1
 	gamestate.playership.position.x= UpdatedMove.Slot[POS_X] 
 	gamestate.playership.position.y= UpdatedMove.Slot[POS_Y] 
-	SetSpritePositionByOffset(player_ship,UpdatedMove.Slot[POS_X] ,UpdatedMove.Slot[POS_Y])
-	SetSpritePositionByOffset(player_ship_notint,UpdatedMove.Slot[POS_X] ,UpdatedMove.Slot[POS_Y])
-	setViewOffset( UpdatedMove.Slot[POS_X] - getVirtualWidth() / 2.0 ,UpdatedMove.Slot[POS_Y] - getVirtualHeight() / 2.0  )
-	SetSpriteAngle(player_ship,UpdatedMove.Slot[ANG_Y]+90)
-	SetSpriteAngle(player_ship_notint,UpdatedMove.Slot[ANG_Y]+90)
-	SetTextPosition(localNickLabel,UpdatedMove.Slot[POS_X] ,UpdatedMove.Slot[POS_Y]-10)	
-		
+
+	endif
 endfunction
 
 
@@ -179,7 +234,7 @@ endfunction
 /* When a client has moved (After internal interpolation) */ 
 /**********************************************************/
 function NGP_onNetworkPlayerMoveUpdate(iNetID, ClientID as integer, UpdatedMove as NGP_Slot)
-
+if gamestate.session.loggedin=1	 
 		SpriteID as integer
 		LabelID as integer
 		SpriteID = GetNetworkClientUserData( iNetID, ClientID, 1)
@@ -196,6 +251,7 @@ function NGP_onNetworkPlayerMoveUpdate(iNetID, ClientID as integer, UpdatedMove 
 			 SetSpriteVisible(SpriteID,displayGhost) // <-- Key "G" to switch displayGhost
 			 SetTextVisible(LabelID,displayGhost) // <-- Key "G" to switch displayGhost		
 		endif	
+		endif
 endfunction
 /************************************************************************/
 /* When a client has disconnected from the server (or "server channel") */ 
@@ -220,24 +276,26 @@ endfunction
 /*************************************************************************************************************************************/
 function NGP_onNetworkPlayerConnect(iNetID, ClientID)
 
-	
+if gamestate.session.loggedin=1	 
 	//PlaySound(JoinSound)
 
 
 		if ClientID = 1 then exitfunction // Ignore Server Join (we only want players !)
-
+	
+	if GetImageExists(player_ship ) =0
+		LoadImage ( player_ship, "ship01.png" )
+	endif
 	////// Create Sprite for New Client
 	//Message("Client ID "+str(ClientID)+" has joined")
-		newSprite as integer
+	newSprite as integer
 		newSprite=CreateSprite(player_ship)
 			SetSpriteAnimation(newSprite,500,300,5)
 			SetSpriteDepth(newSprite,1)
 			SetSpriteOffset( newSprite, GetSpriteWidth(newSprite)/2, GetSpriteHeight(newSprite)/2 ) 
 			SetSpriteScale(newSprite,0.02,0.02) 
-
+endif
 		// Affect the sprite ID to the ClientID at UserData Slot 1
 		SetNetworkClientUserData(iNetID, ClientID, 1, newSprite)
-		
 		
 	////// Creating a Text on the sprite
 		TextToShow$ as string
@@ -250,7 +308,7 @@ function NGP_onNetworkPlayerConnect(iNetID, ClientID)
 		newNickLabel as integer
 		newNickLabel = CreateText(TextToShow$)
 		SetTextAlignment( newNickLabel, 1 )
-		SetTextSize(newNickLabel,25)
+		SetTextSize(newNickLabel,2)
 		// Affect the Text ID to the ClientID at UserData Slot 1
 		SetNetworkClientUserData(iNetID, ClientID, 2, newNickLabel)
 

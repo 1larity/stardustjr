@@ -118,6 +118,8 @@ createSDtext(speed_text,"0.0km/s ",GetScreenBoundsRight(),24)
 createSDtext(speed_title,"speed:",GetScreenBoundsRight()-20,24)
 //align right
 SetTextAlignment( speed_text, ARIGHT ) 
+//System name
+createSDtext(system_name,"System name",GetScreenBoundsRight()-20,20)
 //creds display
 createSDtext(red_creds,"zero red ",GetScreenBoundsRight()-18,26)
 createSDtext(blue_creds,"zero blue ",GetScreenBoundsRight()-18,28)

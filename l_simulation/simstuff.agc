@@ -22,10 +22,7 @@ global textScrollArray as ScrollText[]
 //flag to indicate if tenth of a second timer has been triggered this second
 global OldRemainder as integer=0
 //simulate gameworld
-function doSim(gamestate REF as gamestate)
-		while gamestate.session.networkId =0
-	gamestate.session.networkId = NGP_JoinNetwork(gamestate.session.ServerHost$,gamestate.session.ServerPort, gamestate.session.clientName$ ,gamestate.session.NetworkLatency)
-	endwhile
+function doSim(gamestate REF as gamestate)	
 	if IsNetworkActive(gamestate.session.networkId)=1
 		doNetStuff()
 	endif
@@ -55,6 +52,7 @@ endfunction
 /*                  MAIN SIMULATION LOOP 						*/
 /****************************************************************/
 function update_world(gamestate REF as gamestate)
+	update_player()
 	// do every world update
 	check_refuel()
 			//orbit planet around sun
@@ -100,6 +98,11 @@ function update_world(gamestate REF as gamestate)
 			gamestate.session.bluepayout=gamestate.session.bluepayout-1
 		endif
 		check_planet_scan(gamestate)
+		//update ui
+		SetTextString(blue_creds,str(gamestate.session.blueCredits))
+		SetTextString(red_creds,str(gamestate.session.redCredits))
+		SetTextString(green_creds,str(gamestate.session.greenCredits))
+		SetTextString(system_name,gamestate.session.systemname$)
 	endif
 	
 	SetSpritePositionByOffset(minimap_player_ship,(GetScreenBoundsRight() - GetSpriteWidth( minimap))+(GetSpriteXByOffset(player_ship)/(gamestate.session.worldSize/20)),GetScreenBoundsTop()+GetSpriteYByOffset(player_ship)/(gamestate.session.worldSize/20))
@@ -110,6 +113,17 @@ function update_world(gamestate REF as gamestate)
 	SetTextString(speed_text,left(str(gamestate.playership.velocity#),5)+"km/s") 
 	
 endfunction	
+
+function update_player()
+	SetSpriteVisible(player_ship,1)
+	SetSpritePositionByOffset(player_ship,gamestate.playerShip.position.x ,gamestate.playerShip.position.y)
+	SetSpritePositionByOffset(player_ship_notint,gamestate.playerShip.position.x ,gamestate.playerShip.position.y)
+	setViewOffset( gamestate.playerShip.position.x - getVirtualWidth() / 2.0 ,gamestate.playerShip.position.y - getVirtualHeight() / 2.0  )
+	SetSpriteAngle(player_ship,gamestate.playerShip.angle#+90)
+	SetSpriteAngle(player_ship_notint,gamestate.playerShip.angle#+90)
+	SetTextPosition(localNickLabel,gamestate.playerShip.position.x ,gamestate.playerShip.position.y-10)	
+endfunction
+
 /****************************************************************/
 //scrolls background stars, might be better to spread out update across several sim loops
 /****************************************************************/
@@ -294,7 +308,7 @@ function doNetStuff()
 						colorB=GetNetworkClientInteger(gamestate.session.networkId,id,"colorB")
 						AlphaSprite as integer
 						if id=gamestate.session.myClientId 
-							AlphaSprite=150 // This for the ghost !
+							AlphaSprite=255 // This for the ghost !
 							SetSpriteColor(player_ship,colorR,colorG,colorB,255) // Colorize Local sprite with full alpha 
 							else
 							AlphaSprite=255

@@ -28,10 +28,6 @@
 #constant save_button_text=2
 #constant load_button_text=3
 #constant mine_button_text=4
-//Editbox ID of main chatbox
-global incoming_chat_text as integer
-global chat_edit_text as integer
-global CurrentNetState as integer 
 #constant chat_header_text=6000
 #constant co_ords_text=6001
 #constant speed_text=6002
@@ -39,6 +35,11 @@ global CurrentNetState as integer
 #constant blue_creds=6004
 #constant green_creds=6005
 #constant speed_title=6006
+#constant system_name=6007
+//Editbox ID of main chatbox
+global incoming_chat_text as integer
+global chat_edit_text as integer
+global CurrentNetState as integer 
 
 //ENUMS
 #constant ALEFT=0

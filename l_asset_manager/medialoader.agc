@@ -88,7 +88,9 @@ endfunction
 //setup player ship sprite
 function CreateLocalShipSprite()
 	// Local Player Sprite
-	LoadImage ( player_ship, "ship01.png" )
+	if GetImageExists(player_ship ) =0
+		LoadImage ( player_ship, "ship01.png")
+	endif 
 	LoadImage ( player_ship_notint, "ship01notint.png" )
 	CreateSprite(player_ship,player_ship)
 	CreateSprite(player_ship_notint,player_ship_notint)
@@ -97,7 +99,6 @@ function CreateLocalShipSprite()
 	SetSpriteAnimation(player_ship_notint,192,300,5)
 	SetSpriteDepth(player_ship_notint,15)
 	//set up player ship centre and scale
-	SetSpriteOffset( player_ship, GetSpriteWidth(player_ship)/2, GetSpriteHeight(player_ship)/2 ) 
 	SetSpriteScale(player_ship,0.02,0.02) 
 	SetSpriteScale(player_ship_notint,0.02,0.02) 
 	//position ship at the screen centre
@@ -114,6 +115,7 @@ function CreateLocalShipSprite()
 	gamestate.playerShip.turnspeed# = 0
 	//set collision on ship to fit sprite image
 	SetSpriteShape(player_ship, 3)
+	SetNetworkClientUserData(gamestate.session.networkID, gamestate.session.myClientId, 1, player_ship)
 endfunction
 function load_stars(gamestate REF as gamestate)
 	LoadImage ( 50, "star.png" )

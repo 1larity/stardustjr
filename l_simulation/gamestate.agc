@@ -71,4 +71,6 @@ type session
 	bluepayout as integer
 	redpayout as integer
 	greenpayout as integer
+	systemname$ as string
+	loggedIn as integer
 endtype

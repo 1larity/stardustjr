@@ -173,18 +173,25 @@ function onAGKClientJoin($iClientID) {
 	    $sql = "SELECT * FROM player_account WHERE account_id ='".$nick. "'";
 	    writelog($sql);
 	    //we found a match!
-	    if ($dbh->query($sql) == TRUE) {
-	    foreach ($dbh->query($sql) as $row)
-	    {
-	        writeLog( 'nick ' . $row['account_id'] .' - uid'. $row['UID']);
+	    $result = $dbh->query($sql);
+	    $row = $result->fetch();
+	    
+	    if($row) {
+	       sendwelcomeknownplayer($iClientID);
+	        
+	    foreach ($dbh->query($sql) as $row){
+	        
+	        writeLog( 'nick ' . $row['account_id'] .' - uid '. $row['UID']);
 	        //send appropriate account data back to client
 	        //get the player character data for this account
 	        $sql = "SELECT * FROM playercharsinsystem WHERE player_account_UID ='".$row['UID']. "'";
 	        writelog($sql);
 	        //we found a match!
-	        if ($dbh->query($sql) == TRUE) {
-	            foreach ($dbh->query($sql) as $row){
-	                writeLog( 'Player Character ' . $row['player_account_UID'] .' - uid'. $row['firstname']);
+	        $result = $dbh->query($sql);
+	        $row = $result->fetch();
+	          
+	                writeLog( 'Player selected: UID ' . $row['player_account_UID'] .' - Name'. $row['firstname']);
+	                writeLog('systemname is '.$row['sysname']);
 	               //send data
 	                $characterData = new NetworkMessage();
 	                $characterData->AddNetworkMessageInteger(9007) // Message identifier for character data
@@ -199,6 +206,11 @@ function onAGKClientJoin($iClientID) {
 	                ->AddNetworkMessageInteger( $row['bluecredits'])
 	                ->AddNetworkMessageInteger( $row['redcredits'])
 	                ->AddNetworkMessageInteger( $row['greencredits'])
+	                ->Send($iClientID);
+	                
+	                //send data
+	                $systemData = new NetworkMessage();
+	                $systemData->AddNetworkMessageInteger(9008) // Message identifier for character data
 	                //add solar system name from DB
 	                ->AddNetworkMessageString( $row['sysname'])
 	                //add system co-ords from DB (this serves as the system UID)
@@ -206,22 +218,21 @@ function onAGKClientJoin($iClientID) {
 	                ->AddNetworkMessageInteger( $row['y'])
 	                ->AddNetworkMessageInteger( $row['z'])
 	                ->Send($iClientID);
+	              
 	                $shipX=$row['sysx'];
 	                $shipY= $row['sysy'];
 	                //get the solar system data for this character
-	                $sql = "SELECT * FROM system_resources WHERE x ='".$row['x']. "' and y='".$row['y']."'' and z='".$row['z']."'";
-	                    
-	                ;
+	                $sql = "SELECT * FROM system_resources WHERE x ='".$row['x']. "' and y='".$row['y']."' and z='".$row['z']."'";
 	                writelog($sql);
-	           }
-	           //no nickname match
-	        }else{
-	            writelog("no player name match at login");
-	        }
+	     
 	       }
-	        
 	    }
-	  
+	    
+	   else {
+	        sendunknownplayerwecome($iClientID);
+
+	    }
+	    
 	    /*** close the database connection ***/
 	    $dbh = null;
 	}
@@ -238,6 +249,24 @@ function onAGKClientJoin($iClientID) {
 	//send current solar sytem data
 	//////sendWorldState(iClientID);
 	
+}
+
+//send meesage to client that user is known
+function sendwelcomeknownplayer($iClientID){
+    writelog("Player match at login, sending welcome to id ".$iClientID);
+    $newUser = new NetworkMessage();
+    $newUser->AddNetworkMessageInteger(9009) // Message identifier for unknown user
+    ->AddNetworkMessageString( 'Welcome Back')
+    ->Send($iClientID);
+}
+
+//send message to client that the user has not been recognised
+function sendunknownplayerwecome($iClientID){
+    writelog("no player name match at login");
+    $newUser = new NetworkMessage();
+    $newUser->AddNetworkMessageInteger(9009) // Message identifier for unknown user
+    ->AddNetworkMessageString( 'Unknown user')
+    ->Send($iClientID);
 }
 function sendWorldstate($iClientID){
 	writeLog("Sending worldstate to client" .$iClientID);
