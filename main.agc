@@ -30,7 +30,7 @@ SetErrorMode(2)
 
 #constant version$ ="0.0.1"
 initDebug("Stardust, version " + version$ +" at " +GetCurrentDate() +" "+ GetCurrentTime() )
-#constant debug =1
+#constant debug =0
 #constant deepdebug =0
 global gamestate as gamestate
 global ChatEditFocus
@@ -43,7 +43,7 @@ setupNetSession()
 
 login()
 //setup planets
-populate_planets()
+//populate_planets()
 
 //load and setup sound and graphics
 load_assets(gamestate)
@@ -54,7 +54,7 @@ create_minimap()
 gamestate.playerShip.acceleration#=.05
 gamestate.playerShip.max_velocity#=1
 
-distance_to_sun# as float
+
 do	
 	
 	// do player inputs
@@ -67,10 +67,6 @@ do
 	//endif	
 	//simulate game
 	doSim(gamestate)
-	
-
-  
-
 	//print("ship heading " + str(gamestate.playerShip.heading.x) +"   "+ str(gamestate.playerShip.heading.x))
 	//Print debug
 	if debug=1 and deepdebug=1
@@ -80,6 +76,5 @@ do
 		print (GetScreenBoundsTop()) 
 		endif
 	//SetClearColor(2,5,30)
-	
     Sync()
 loop

@@ -192,14 +192,14 @@ function randomStars()
 		//set number of background stars set up (for hiding later in minimap)
 	gamestate.session.bgStars=100-1
 	index as integer
-	//we will use the same array to store the star speeds and speed of dust, we will just seed the speed multiplier differntly 
+	//we will use the same array to store the star speeds and speed of dust, we will just seed the speed multiplier differently 
 	for index=0 to 500
 		starscale#= Random(2,20)/500.0
 		//the first 30% will be stars
 		if index < 100
 			CreateSprite(500+index,50)
 			// sort out a random speed for the stars
-			gamestate.session.starfieldspeed [ index ] = Random ( 1, 30 ) / 800.0
+			gamestate.session.starfieldspeed [ index ] = Random ( 1, 30 ) / 500.0
 			SetSpriteColor(index+500,Random(200,255),Random(200,255),Random(200,255),255)
 			SetSpriteDepth(index+500,51)
 		else 		
@@ -216,8 +216,7 @@ function randomStars()
 		SetSpriteScale(index+500,starscale#,starscale#)
 		FixSpriteToScreen(500+index,1)
 		//randomly position stars
-		SetSpritePosition(500+index, Random(1,140)+gamestate.playerShip.position.x-20,Random(1,140)+gamestate.playerShip.position.y-20)
-		
+		SetSpritePosition(500+index, Random(1,140)-20,Random(1,140)-20)
 	next
 
 	//set number of background stars set up (for hiding later in minimap)

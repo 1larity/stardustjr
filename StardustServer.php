@@ -1,6 +1,6 @@
 #!/usr/bin/php -q
 <?php
-include('scan.php');
+
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 //
 //
@@ -123,7 +123,7 @@ date_default_timezone_set('Europe/Paris');
 define("SERVER_BIND_ADDRESS", false); // Server Address to Bind (set this to false to listen to any interface => 0.0.0.0)
 define("SERVER_PORT", 33333); // Server Port the players will connect
 define("SERVER_NAME", "Stardust_Server"); // Server Display Name for clients/players
-define("SERVER_REFRESH_INTERVAL", 2500); // Server logic Timer in nanoseconds // depends on Server CPU capabilities
+define("SERVER_REFRESH_INTERVAL", 25000); // Server logic Timer in nanoseconds // depends on Server CPU capabilities
 DEFINE('DBUSER','Playeraccount');
 DEFINE('DBPW','akira01');
 DEFINE('DBHOST','localhost');
@@ -132,6 +132,9 @@ DEFINE('DBNAME','test');
 /********************** PLUGINS ****************************/
 
 include "StardustServer_NetGamePlugin.php"; // We Load the NetGame Plugin ! :) all functions are prefixed by "NGP_"
+include"scan.php";
+include"data_out.php";
+include"updateplanets.php";
 //array of current client scans
 $scanarray= array();
 /***********************************************************/
@@ -141,7 +144,7 @@ function onAGKServerRefreshTimer() {
 	// DO NOT writeLog anything here ! it will flood your terminal or logfile !
 	// Here you can check for date or time to fire messages or actions (for example).
 	// Be careful to use "reset" variables or flag true/false once your date/time actions are done, this event is triggered multiple times in a second (SERVER_REFRESH_INTERVAL)...
-
+    updateplanets();
 	// Send the worldstate to all nonempty channels (Mandatory)
 	foreach (GetChannelsList() as $NonEmptyChannel) {
 		NGP_sendWorldState($NonEmptyChannel);
@@ -172,62 +175,44 @@ function onAGKClientJoin($iClientID) {
 	    /*** The SQL SELECT statement ***/
 	    $sql = "SELECT * FROM player_account WHERE account_id ='".$nick. "'";
 	    writelog($sql);
-	    //we found a match!
+	    
 	    $result = $dbh->query($sql);
 	    $row = $result->fetch();
-	    
+	    //if we found a match (rows>0) send the user thier data
 	    if($row) {
 	       sendwelcomeknownplayer($iClientID);
 	        
-	    foreach ($dbh->query($sql) as $row){
+	   // foreach ($dbh->query($sql) as $row){
 	        
 	        writeLog( 'nick ' . $row['account_id'] .' - uid '. $row['UID']);
 	        //send appropriate account data back to client
-	        //get the player character data for this account
-	        $sql = "SELECT * FROM playercharsinsystem WHERE player_account_UID ='".$row['UID']. "'";
-	        writelog($sql);
+	       
+
 	        //we found a match!
-	        $result = $dbh->query($sql);
-	        $row = $result->fetch();
-	          
-	                writeLog( 'Player selected: UID ' . $row['player_account_UID'] .' - Name'. $row['firstname']);
-	                writeLog('systemname is '.$row['sysname']);
-	               //send data
-	                $characterData = new NetworkMessage();
-	                $characterData->AddNetworkMessageInteger(9007) // Message identifier for character data
-	                //add firstname from DB
-	                ->AddNetworkMessageString( $row['firstname'])
-	                //add surname from DB
-	                ->AddNetworkMessageString( $row['surname'])
-	                //add ship co-ords from DB
-	                ->AddNetworkMessageInteger( $row['sysx'])
-	                ->AddNetworkMessageInteger( $row['sysy'])
-	                //add credits from DB
-	                ->AddNetworkMessageInteger( $row['bluecredits'])
-	                ->AddNetworkMessageInteger( $row['redcredits'])
-	                ->AddNetworkMessageInteger( $row['greencredits'])
-	                ->Send($iClientID);
-	                
+	        $UID=$row['UID'];
+	        //get the player character data for this account
+	        $chardata = new basechardata();
+	        $chardata =sendbasechardata($iClientID, $dbh, $UID);
+
+	        
 	                //send data
 	                $systemData = new NetworkMessage();
 	                $systemData->AddNetworkMessageInteger(9008) // Message identifier for character data
 	                //add solar system name from DB
-	                ->AddNetworkMessageString( $row['sysname'])
+	                ->AddNetworkMessageString( $chardata->systemname)
 	                //add system co-ords from DB (this serves as the system UID)
-	                ->AddNetworkMessageInteger( $row['x'])
-	                ->AddNetworkMessageInteger( $row['y'])
-	                ->AddNetworkMessageInteger( $row['z'])
+	                ->AddNetworkMessageInteger( $chardata->systemX)
+	                ->AddNetworkMessageInteger( $chardata->systemY)
+	                ->AddNetworkMessageInteger( $chardata->systemZ)
 	                ->Send($iClientID);
 	              
-	                $shipX=$row['sysx'];
-	                $shipY= $row['sysy'];
+	                NGP_SetClientState($iClientID, POS_X, $chardata->shipX);
+	                NGP_SetClientState($iClientID, POS_Y, $chardata->shipY);
 	                //get the solar system data for this character
-	                $sql = "SELECT * FROM system_resources WHERE x ='".$row['x']. "' and y='".$row['y']."' and z='".$row['z']."'";
-	                writelog($sql);
-	     
-	       }
+	                sendPlayerSolarSystemData($iClientID,$chardata->systemX,$chardata->systemY,$chardata->systemZ,$dbh);
+	      // }
 	    }
-	    
+	    //no rows returned from user id query tell the clien they are unknown
 	   else {
 	        sendunknownplayerwecome($iClientID);
 
@@ -241,61 +226,44 @@ function onAGKClientJoin($iClientID) {
 	    echo $e->getMessage();
 	}
 	
-	//load player data from JSON Here
-	
 	// Player Starts to X=577,Y=628 ? :)
-	NGP_SetClientState($iClientID, POS_X, $shipX);
-	NGP_SetClientState($iClientID, POS_Y, $shipY);
+
 	//send current solar sytem data
 	//////sendWorldState(iClientID);
 	
 }
 
-//send meesage to client that user is known
-function sendwelcomeknownplayer($iClientID){
-    writelog("Player match at login, sending welcome to id ".$iClientID);
-    $newUser = new NetworkMessage();
-    $newUser->AddNetworkMessageInteger(9009) // Message identifier for unknown user
-    ->AddNetworkMessageString( 'Welcome Back')
-    ->Send($iClientID);
-}
 
-//send message to client that the user has not been recognised
-function sendunknownplayerwecome($iClientID){
-    writelog("no player name match at login");
-    $newUser = new NetworkMessage();
-    $newUser->AddNetworkMessageInteger(9009) // Message identifier for unknown user
-    ->AddNetworkMessageString( 'Unknown user')
-    ->Send($iClientID);
-}
-function sendWorldstate($iClientID){
-	writeLog("Sending worldstate to client" .$iClientID);
-	$worldstatestring = file_get_contents("map/system01.ded");
-	//send file name this also instructs client to get ready for solar system data
-	$filename = new NetworkMessage();
+// function sendWorldstate($iClientID){
+// 	writeLog("Sending worldstate to client" .$iClientID);
 	
-	$filename->AddNetworkMessageInteger(9000) // Message identifier to for filename
-	->AddNetworkMessageString("system02.ded")
-		->Send($iClientID);
-	//split JSON from file into sperate lines in an array
-	$JSON_array = split("/\r\n|\n|\r/", $worldstatestring);
-	foreach ($JSON_array as $JSONLine){
+	
+// 	$worldstatestring = file_get_contents("map/system01.ded");
+// 	//send file name this also instructs client to get ready for solar system data
+// 	$filename = new NetworkMessage();
+	
+// 	$filename->AddNetworkMessageInteger(9000) // Message identifier to for filename
+// 	->AddNetworkMessageString("system02.ded")
+// 		->Send($iClientID);
+// 	//split JSON from file into sperate lines in an array
+// 	$JSON_array = split("/\r\n|\n|\r/", $worldstatestring);
+// 	foreach ($JSON_array as $JSONLine){
 	 
-		$worldStateMessage = new NetworkMessage();
+// 		$worldStateMessage = new NetworkMessage();
 	
-		$worldStateMessage->AddNetworkMessageInteger(9001) // Message identifier for JSON solar system data
-		//add current line of JSON to net message
-		->AddNetworkMessageString($JSONLine)
-		->Send($iClientID);
+// 		$worldStateMessage->AddNetworkMessageInteger(9001) // Message identifier for JSON solar system data
+// 		//add current line of JSON to net message
+// 		->AddNetworkMessageString($JSONLine)
+// 		->Send($iClientID);
 		
-	}
-	//send close file message
-	$closeFile = new NetworkMessage();
-	 echo "Closing file";
-	$closeFile->AddNetworkMessageInteger(9002) // Message identifier for filename
-	->AddNetworkMessageString("system02.ded")
-	->Send($iClientID);
-}
+// 	}
+// 	//send close file message
+// 	$closeFile = new NetworkMessage();
+// 	 echo "Closing file";
+// 	$closeFile->AddNetworkMessageInteger(9002) // Message identifier for filename
+// 	->AddNetworkMessageString("system02.ded")
+// 	->Send($iClientID);
+// }
 function onAGKClientChangeChannel($iClientID, $iOldChannelNumber, $iNewChannelNumber) {
 	// when a client move from a channel to another ( AGK Command : SetNetworkLocalInteger( networkId, "SERVER_CHANNEL", channelNumber)    )
 
@@ -332,6 +300,10 @@ function onAGKClientUpdateVariable($iClientID, $sVariableName, $mVariableValue) 
 
 function onAGKClientNetworkMessage($iSenderID, $iDestinationID, $Message) {
     global  $scanarray;
+    //open DB for anything that needs it
+    $dbh = new PDO("mysql:host=".DBHOST.";dbname=".DBNAME, DBUSER, DBPW);
+    /*** echo a message saying we have connected ***/
+   // writeLog( 'You Connected to database for client message');
 	// when a client (SenderID) send a NetworkMessage (AGK Command SendNetworkMessage)
 
 	// Forward Message to the NetGamePlugin to check for Clients Movements Messages and update internal WorldState (Mandatory)
@@ -388,12 +360,17 @@ function onAGKClientNetworkMessage($iSenderID, $iDestinationID, $Message) {
 	    ->Send($iSenderID);
 	    //  Display in Logs
 	   writeLog(GetClientName($iSenderID) . " ended scan at  " . date( "Y-m-d\TH:i:s\Z" ,GetNetworkMessageInteger($Message)). "value".$earningsValue );
+	   if($earningsValue > 15){
+//	       storeScanDetails($iSenderID,structureID);
+	   }
 	}
-
-
-	
 }
 
+//save the uid of the scanned planet and player for future reference
+function storeScanDetails($clientID, $structureID)
+{
+    
+}
 // delete a given scan
 function deleteScan($clientID){
     global  $scanarray;

@@ -5,7 +5,7 @@
 type gamestate
     playerShip as ship
     session as session
-	planets as planet[7]
+	planets as planet[]
 	stations as station[]
 	settings as settings
 endtype
@@ -14,6 +14,7 @@ type planet
 	planetID as integer
 	name as string
 	position as Vector2D
+	oldposition as Vector2D
 	angularVelocity# as float
 	resources as resource[5]
 	planet_type as integer
@@ -73,4 +74,5 @@ type session
 	greenpayout as integer
 	systemname$ as string
 	loggedIn as integer
+	lastplanetupdate as float
 endtype
