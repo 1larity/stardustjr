@@ -29,8 +29,8 @@ mapSize# = 100// devMin# / 20.0
 
 	//rescale planet sprites so they are still visible on minimap
 	for index =0 to gamestate.planets.length
-		SetSpriteScale(index+50,gamestate.planets[index].size#*rescale,gamestate.planets[index].size#*rescale)
-		SetSpritePositionByOffset(index+50,gamestate.planets[index].position.x,gamestate.planets[index].position.y)
+		//SetSpriteScale(index+50,gamestate.planets[index].size#*rescale,gamestate.planets[index].size#*rescale)
+		//SetSpritePositionByOffset(index+50,gamestate.planets[index].position.x,gamestate.planets[index].position.y)
 		SetSpriteColor(index+50,255,255,255,255)
 		
 	next index
@@ -50,9 +50,9 @@ mapSize# = 100// devMin# / 20.0
 	endif
 	
 	for index =0 to gamestate.planets.length
-		SetSpriteScale(index+50,gamestate.planets[index].size#,gamestate.planets[index].size#)
-		SetSpritePositionByOffset(index+50,gamestate.planets[index].position.x,gamestate.planets[index].position.y)
-		SetSpriteShape(index+50, 1)
+		//SetSpriteScale(index+50,gamestate.planets[index].size#,gamestate.planets[index].size#)
+		//SetSpritePositionByOffset(index+50,gamestate.planets[index].position.x,gamestate.planets[index].position.y)
+		//SetSpriteShape(index+50, 1)
 	next index
 	SetDisplayAspect(1.0)
 	//create map sprite from image

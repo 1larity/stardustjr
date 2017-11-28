@@ -22,6 +22,7 @@ global textScrollArray as ScrollText[]
 //flag to indicate if tenth of a second timer has been triggered this second
 global OldRemainder as integer=0
 //simulate gameworld
+
 function doSim(gamestate REF as gamestate)	
 	if IsNetworkActive(gamestate.session.networkId)=1
 		doNetStuff()
@@ -56,7 +57,9 @@ function update_world(gamestate REF as gamestate)
 	// do every world update
 	check_refuel()
 			//orbit planet around sun
-	orbitPlanets()
+	//orbitPlanets(1)
+	updatePlanets()
+	
 	positionButtons()
 	positionChat()
 	//if we have active payout particles, update them
@@ -132,7 +135,7 @@ function scrollStars()
   for index = 0 to 500
 		
         // move all stars in the opposite direction the ship is traveling
-       // SetSpriteX ( index+500, GetSpriteX ( index +500) - gamestate.session.starfieldspeed [ index ] )
+      //  SetSpriteX ( index+500, GetSpriteX ( index +500) - gamestate.session.starfieldspeed [ index ] )
        velocity_X as float
        velocity_Y as float
        // calculate the velocity vector from angle and speed
@@ -163,14 +166,27 @@ function check_refuel()
 		print("refueling")
 	endif
 endfunction
-     
-//orbit all planets
-function orbitPlanets()
+   
+
+//update planet sprites (position is set by server)
+function updatePlanets()
+
 	index as integer
+	//print ("frametime"+str(GetFrameTime()))
+	tweenVector as Vector2D
 	for index =0 to gamestate.planets.length
-		orbit(index)
+		tweenVector.x =Lerp(gamestate.planets[index].oldposition.x,gamestate.planets[index].position.x,gamestate.session.lastplanetupdate)
+		tweenVector.y =Lerp(gamestate.planets[index].oldposition.y,gamestate.planets[index].position.y,gamestate.session.lastplanetupdate)
+		//print("interpolate "+str(gamestate.planets[index].oldposition.x)+" to "+str(gamestate.planets[index].position.x)+" int "+str(tweenVector.x))
+		//SetSpritePositionByOffset(index+50,tweenVector.x,tweenVector.y)
+		SetSpritePositionByOffset(index+50,tweenVector.x ,tweenVector.y )
+//		SetSpritePositionByOffset(index+50,gamestate.planets[index].position.x,gamestate.planets[index].position.y)
 	next index	
+	gamestate.session.lastplanetupdate=gamestate.session.lastplanetupdate+0.05
+	//print(str(gamestate.session.lastplanetupdate))
+	
 endfunction
+
             
 function check_planet_scan(gamestate REF as gamestate)
 	index as integer
@@ -187,27 +203,8 @@ function check_planet_scan(gamestate REF as gamestate)
 			endif
 	next index	
 endfunction
-//update the orbit of one planet
-function orbit(planetIndex)
-			newPosition as Vector2D
-		centre as Vector2D
-		centre.x=gamestate.session.worldsize/2
-		centre.y=gamestate.session.worldsize/2
-		radius as integer
-		radius=gamestate.planets[planetIndex].orbit
-		
-		angle# as float
-		angle#=0
-		//get new theta 
-		gamestate.planets[planetIndex].angle# = gamestate.planets[planetIndex].angle# + gamestate.planets[planetIndex].angularVelocity#
-		//reset any planet over one orbit to start position
-		if gamestate.planets[planetIndex].angle# >360
-			gamestate.planets[planetIndex].angle#=360-gamestate.planets[planetIndex].angle#
-		endif
-		newPosition=  nextArcStep(centre,radius , gamestate.planets[planetIndex].angle#)
-		gamestate.planets[planetIndex].position=newPosition
-		SetSpritePositionByOffset(planetIndex+50,gamestate.planets[planetIndex].position.x,gamestate.planets[planetIndex].position.y)
-endfunction
+
+
 function doScan( gamestate REF as gamestate)
 	//only do scan stuff if player has started a scan
 	if scanStart# <>0

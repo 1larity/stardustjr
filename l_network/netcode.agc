@@ -10,9 +10,9 @@ function setupNetSession()
 	//get player name
 	 //-20,GetScreenBoundsBottom()-20
 	if debug=0
-		nickname$ = TextInput("EnterName"+right(str(GetMilliseconds()),3),GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
+		nickname$ = TextInput("FirstPlayer",GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
 	else
-		nickname$ = TextInput("Rich",GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
+		nickname$ = TextInput("FirstPlayer",GetScreenBoundsleft()+20,GetScreenBoundsBottom()-50)
 	endif	
 	//gamestate.session.ServerHost$ = "192.168.0.6" // IP Of LAN
 	//gamestate.session.ServerHost$ = "82.7.176.97" // IP Of WAN
@@ -57,7 +57,7 @@ function send_scan_tick()
 	newMsg as integer
 	newMsg=CreateNetworkMessage()
 	AddNetworkMessageInteger(newMsg,9004) // server command for earnings report
-	AddNetworkMessageInteger(newMsg,1)//send the quantity of tick (so we can just add them up on serverside to value scan)
+	AddNetworkMessageInteger(newMsg,1) //send the quantity of tick (so we can just add them up on serverside to value scan)
 	SendNetworkMessage(gamestate.session.networkId,1,newMsg) // Send to server
 				
 endfunction
@@ -134,15 +134,42 @@ function NGP_onNetworkMessage(ServerCommand as integer,idMessage as integer)
 						saveServerMap(fileName$)
 						
 	endif
-		if ServerCommand = 9001 // It's a worlddata message !
+		if ServerCommand = 9001 // It's a solarsystem message !
+						newPlanet as planet
+						newplanet.name=GetNetworkMessageString(idMessage)
+						newplanet.orbit=GetNetworkMessageInteger(idMessage)
+						newplanet.angularVelocity#=GetNetworkMessageFloat(idMessage)
+						newplanet.position.x=GetNetworkMessageFloat(idMessage)
+						newplanet.position.y=GetNetworkMessageFloat(idMessage)
+						newplanet.angle#=GetNetworkMessageFloat(idMessage)
+						newplanet.planetID=GetNetworkMessageInteger(idMessage)
+						
+						newplanet.planet_type=Random(1,2)
+						newplanet.size# = Random(5,7)/75.0
+						gamestate.planets.insert(newPlanet)
+						writeDebug(newPlanet.name+" "+str(newPlanet.angle#)+" "+str(newPlanet.planetID))
+						
 						//message("ok")
-						mapData$ as string
-						mapData$ = GetNetworkMessageString(idMessage)
-						WriteMapData(mapData$)
+						//mapData$ as string
+						//mapData$ = GetNetworkMessageString(idMessage)
+						//WriteMapData(mapData$)
 						
 	endif
-		if ServerCommand = 9002 // It's an end of worlddata message !
-						closeMapFile()
+		if ServerCommand = 9002 // It's a planet orbit update!
+						planetID as integer
+						planetID =GetNetworkMessageInteger(idMessage)
+						
+						index as integer
+						for index = 0 to gamestate.planets.length
+							if gamestate.planets[index].planetID=planetID
+								gamestate.planets[index].oldposition.x=gamestate.planets[index].position.x
+								gamestate.planets[index].oldposition.y=gamestate.planets[index].position.y
+								gamestate.planets[index].position.x=GetNetworkMessageFloat(idMessage)
+								gamestate.planets[index].position.y=GetNetworkMessageFloat(idMessage)
+								gamestate.session.lastplanetupdate =0	
+							endif
+						next index
+					
 	endif
 	if ServerCommand = 9006 // if its message 9006 its an earnings message.
 						//message("ok")
@@ -162,12 +189,6 @@ function NGP_onNetworkMessage(ServerCommand as integer,idMessage as integer)
 				gamestate.session.blueCredits = GetNetworkMessageInteger(idMessage)
 				gamestate.session.redCredits = GetNetworkMessageInteger(idMessage)
 				gamestate.session.greenCredits = GetNetworkMessageInteger(idMessage)
-				gamestate.session.greenCredits = GetNetworkMessageInteger(idMessage)
-				gamestate.session.systemname$ = GetNetworkMessageString(idMessage)
-				sysx = GetNetworkMessageInteger(idMessage)
-				sysy = GetNetworkMessageInteger(idMessage)
-				sysz = GetNetworkMessageInteger(idMessage)
-
 				writeDebug("Character loaded, pos "+str(gamestate.playerShip.position.x) +"y "+str(gamestate.playerShip.position.y))	
 	endif
 	if ServerCommand = 9008 // if its message 9008 its system data message.
